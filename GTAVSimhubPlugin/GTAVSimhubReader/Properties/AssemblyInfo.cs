@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // Le informazioni generali relative a un assembly sono controllate dal seguente 
 // set di attributi. Modificare i valori di questi attributi per modificare le informazioni
 // associate a un assembly.
-[assembly: AssemblyTitle("GTAVSimhubReader")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("GTAVReader")]
+[assembly: AssemblyDescription("GTAV Simhub Reader")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("GTAVSimhubReader")]
-[assembly: AssemblyCopyright("Copyright ©  2017")]
+[assembly: AssemblyProduct("GTAVSReader")]
+[assembly: AssemblyCopyright("Copyright ©  2017 Carlo Iovino")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

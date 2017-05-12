@@ -7,10 +7,11 @@
     <ProjectGuid>{7F51585B-86A2-4866-BADF-55EAA47F4ED4}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>GTAVSimhubReader</RootNamespace>
+    <RootNamespace>GTAVReader</RootNamespace>
     <AssemblyName>GTAVSimhubReader</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -24,20 +25,21 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
+    <OutputPath>..\..\..\..\..\..\..\Program Files %28x86%29\SimHub\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="GameReaderCommon">
-      <HintPath>..\..\..\..\..\Desktop\HubPackage.5.01.2\HubPackage\SimHub\GameReaderCommon.dll</HintPath>
+      <HintPath>..\..\..\..\..\Desktop\HubPackage.5.01.3\HubPackage\SimHub\GameReaderCommon.dll</HintPath>
     </Reference>
     <Reference Include="SharedMemory, Version=2.0.16.0, Culture=neutral, PublicKeyToken=71afd155bcebae3e, processorArchitecture=MSIL">
       <HintPath>..\packages\SharedMemory.2.0.16\lib\net40\SharedMemory.dll</HintPath>
     </Reference>
     <Reference Include="SimHub.Plugins">
-      <HintPath>..\..\..\..\..\Desktop\HubPackage.5.01.2\HubPackage\SimHub\SimHub.Plugins.dll</HintPath>
+      <HintPath>..\..\..\..\..\Desktop\HubPackage.5.01.3\HubPackage\SimHub\SimHub.Plugins.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -52,7 +54,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DataConsumer.cs" />
-    <Compile Include="GTAVSimubReader.cs" />
+    <Compile Include="GTAVReader.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Settings.cs">
       <SubType>Form</SubType>

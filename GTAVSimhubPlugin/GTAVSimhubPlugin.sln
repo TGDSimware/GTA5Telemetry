@@ -1,11 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26403.7
+# Visual Studio 2013
+VisualStudioVersion = 12.0.40629.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GTAVSimhubPlugin", "GTAVSimhubPlugin\GTAVSimhubPlugin.csproj", "{F9B5EF01-8C96-4B49-8EDD-475D0F45D441}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GTAVSimhubReader", "GTAVSimhubReader\GTAVSimhubReader.csproj", "{7F51585B-86A2-4866-BADF-55EAA47F4ED4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GTAVReader", "GTAVSimhubReader\GTAVReader.csproj", "{7F51585B-86A2-4866-BADF-55EAA47F4ED4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharedMemoryClient", "SharedMemoryClient\SharedMemoryClient.csproj", "{FE6EAAD5-A00F-43AD-982A-7B6A36E70010}"
 EndProject

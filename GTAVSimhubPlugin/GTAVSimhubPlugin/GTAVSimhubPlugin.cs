@@ -1,30 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Runtime.Serialization;
+using GTA;
+using GTA.Native;
+using System.Windows.Forms;
 using System.Runtime.Serialization.Formatters.Binary;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
+using System.IO;
 
-namespace Mock.Plugin
+
+/// <summary>
+/// GTA V Simhub Plugin
+/// 
+/// If this code works, it has been written by Carlo Iovino (carlo.iovino@outlook.com)
+/// The Green Dragon Youtube Channel (www.youtube.com/carloxofficial
+/// 
+/// </summary>
+namespace GTAVSimhub.Plugin
 {
 
     sealed class DataProducer : IDisposable
-    {       
+    {
         private BinaryFormatter binaryFormatter = new BinaryFormatter();
         private SharedMemory.SharedArray<byte> sharedBuffer = null;
-
-        string dataRow(string property, object value)
-        {
-            string type;
-
-            type = value.GetType().Name;
-            string r = property + ":" + type + ":" + value.ToString();
-            return r;
-        }
 
         private byte[] ToBinary(Object source)
         {
@@ -74,24 +70,6 @@ namespace Mock.Plugin
             }
         }
 
-        static void Main(string[] args)
-        {
-            //binaryFormatter.Binder = new CurrentAssemblyDeserializationBinder();
-            var producer = new DataProducer("GTAVSimHubPlugin");
-
-
-            for (int i=0;;i++)
-            {
-                List<string> data = new List<string>();
-
-                data.Add(producer.dataRow("GameData.NewData.SpeedKmh", i));
-               
-
-                producer.Share(data.ToArray());
-                Thread.Sleep(100);                           
-            }
-        }
-
 
         #region IDisposable Support
         private bool disposedValue = false; // Per rilevare chiamate ridondanti
@@ -128,5 +106,55 @@ namespace Mock.Plugin
             // GC.SuppressFinalize(this);
         }
         #endregion
+    }
+
+    class GTAVSimHubClient : Script
+    {
+        DataProducer dataProducer;
+
+        const string P_CURRENTGEAR = "GameData.NewData.Gear";
+        const string P_SPEED = "GameData.NewData.SpeedKmh";
+        const string P_RPMS = "GameData.NewData.Rpms";
+        const string P_GAMEISRUNNING = "GameIsRunning";
+
+        public GTAVSimHubClient()
+        {
+            dataProducer = new DataProducer("GTAVSimHubPlugin");
+        }
+
+        string dataRow(string property, object value)
+        {
+            string type;
+
+            type = value.GetType().Name;
+            string r = property + ":" + type + ":" + value.ToString();
+            return r;
+        }
+
+        void OnTick(object sender, EventArgs e)
+        {
+            Ped player = Game.Player.Character;
+            List<string> dataList = new List<string>();            
+
+            if (player.IsInVehicle())
+            {
+                // Player in vehicle
+                Vehicle vehicle = player.CurrentVehicle;
+
+                dataList.Add(dataRow(P_RPMS, Convert.ToDouble(vehicle.CurrentRPM)));
+                dataList.Add(dataRow(P_SPEED, vehicle.Speed));
+                dataList.Add(dataRow(P_CURRENTGEAR, vehicle.CurrentGear));                
+            }
+            else
+            {
+                dataList.Add(dataRow(P_RPMS, player.IsInCombat ? 100 : 0));
+                dataList.Add(dataRow(P_SPEED, player.Health));
+                dataList.Add(dataRow(P_CURRENTGEAR, 0));
+            }
+
+            // Share data
+            string[] dataArray = dataList.ToArray();
+            dataProducer.Share(dataArray);
+        }
     }
 }
