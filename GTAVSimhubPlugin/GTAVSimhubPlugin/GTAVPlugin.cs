@@ -20,11 +20,20 @@ namespace GTAVSimhub.Plugin
     {
         DataProducer dataProducer;
 
-        const string P_CURRENTGEAR = "Gear";
+        const string P_GEAR = "Gear";
+        const string P_GEARNUMBER = "GearNumber";
+        const string P_NAME = "VehicleOrWeapon";
         const string P_SPEED = "SpeedKmh";
         const string P_RPMS = "Rpms";
+        const string P_HEALTH = "Health";
         const string P_GAMEISRUNNING = "GameIsRunning";
+        const string P_ONFIRE = "OnFire";
+        const string P_VEHICLENAME = "VehicleName";
+        const string P_INVEHICLE = "InVehicle";
+        const string P_WEAPON = "Weapon";
+
         const string P_DEBUG = "DEBUG";
+        static string[] GEARS = { "R", "N", "1", "2", "3", "4", "5", "6", "7", "8", "9" };
 
         public GTAVSimHubClient()
         {
@@ -66,17 +75,35 @@ namespace GTAVSimhub.Plugin
             {
                 // Player in vehicle
                 Vehicle vehicle = player.CurrentVehicle;
-
+                dataList.Add(Packet(P_INVEHICLE, 1));
+                dataList.Add(Packet(P_ONFIRE, vehicle.IsOnFire ? 1 : 0));                
                 dataList.Add(Packet(P_RPMS, Convert.ToDouble(vehicle.CurrentRPM)));
-                dataList.Add(Packet(P_SPEED, Convert.ToDouble(vehicle.Speed)));
-                dataList.Add(Packet(P_CURRENTGEAR, vehicle.CurrentGear == 0 ? "N" : vehicle.CurrentGear.ToString()));                
+                dataList.Add(Packet(P_SPEED, Convert.ToDouble(vehicle.Speed * 2.51f /*as miles*/ * 1.6f /*as kilometers*/)));
+                dataList.Add(Packet(P_NAME, vehicle.FriendlyName));
+                dataList.Add(Packet(P_HEALTH, vehicle.Health));
+
+                dataList.Add(Packet(P_GEARNUMBER, vehicle.CurrentGear));
+
+                if (vehicle.CurrentGear < 9)
+                {
+                    dataList.Add(Packet(P_GEAR, GEARS[vehicle.CurrentGear + 1]));
+                }
             }
             else
             {
-                dataList.Add(Packet(P_RPMS, Convert.ToDouble(player.IsInCombat ? 100 : 0)));
-                dataList.Add(Packet(P_SPEED, Convert.ToDouble(player.Health)));
-                dataList.Add(Packet(P_CURRENTGEAR, Convert.ToInt32(0)));
+                // Player on foot
+                dataList.Add(Packet(P_INVEHICLE, 0));
+                dataList.Add(Packet(P_RPMS, Convert.ToDouble(player.Health) / 100d));
+                dataList.Add(Packet(P_SPEED, 0));
+                
+                dataList.Add(Packet(P_GEARNUMBER, Convert.ToInt32(0)));
+                dataList.Add(Packet(P_GEAR, "N"));
+                
             }
+
+            dataList.Add(Packet(P_HEALTH, player.Health));
+            dataList.Add(Packet(P_NAME, player.Weapons.Current.Name));
+            dataList.Add(Packet(P_WEAPON, player.Weapons.Current.Name));
 
             // Share data
             string[] dataArray = dataList.ToArray();

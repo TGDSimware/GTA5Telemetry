@@ -13,26 +13,29 @@ namespace GTAVSimhub.Plugin
         public string Name { get; set; }
         public Type Type { get; set; }
         public Object Value { get; set; }
+
+        public Property(string n, Type t, Object v) { Name = n; Type = t; Value = v; }
     }
 
     [PluginName("GTA V Reader")]
     class GTAVReader : IPlugin, IDataPlugin
     {
-        // Private properties: begin
-        private Double RPM = 0.0;
-        private Double Speed = 0;
-        private String Gear = "N";
-        private Int32 IsRunning = 0;
-
         private string DEBUG = "";
         //Private properties: end
 
-        // Simhub "game-independent" Properties names
-        const string P_CURRENTGEAR = "Gear";
-        const string P_SPEED = "SpeedKmh";
-        const string P_RPMS = "Rpms";
-        const string P_GAMEISRUNNING = "GameIsRunning";
-        const string P_DEBUG = "DEBUG";
+        Property[] Properties = {
+            new Property("Gear", typeof(String), "") ,
+            new Property("GearNumber", typeof(Int32), 0) ,
+            new Property("SpeedKmh", typeof(Double), 0d ),
+            new Property("Health", typeof(Int32), 0d ),
+            new Property("Rpms", typeof(Double), 0d ),
+            new Property("GameIsRunning", typeof(Int32), 0 ),
+            new Property("InVehicle", typeof(Int32), 0 ),
+            new Property("OnFire", typeof(Int32), 0 ),
+            new Property("Name", typeof(String), "") ,
+            new Property("VehicleName", typeof(String), "") ,
+            new Property("Weapon", typeof(String), "")
+        };
 
         // IPlugin required Properties
         /// <summary>
@@ -46,15 +49,13 @@ namespace GTAVSimhub.Plugin
         public GTAVReader()
         {
             // Init the shared memory buffer
-            dataConsumer = new DataConsumer("GTAVSimHubPlugin");
-            //_GameData = new GameData();
-            //GameData.GameRunning = true;           
+            dataConsumer = new DataConsumer("GTAVSimHubPlugin");        
         }
 
         private void debug(string message)
         {
             DEBUG += System.DateTime.Now.ToString() + ": " + message + "\n";
-            PluginManager.SetPropertyValue(P_DEBUG, this.GetType(), DEBUG);
+            PluginManager.SetPropertyValue("DEBUG", this.GetType(), DEBUG);
         }
 
         /// <summary>
@@ -64,11 +65,10 @@ namespace GTAVSimhub.Plugin
         public void Init(PluginManager pluginManager)
         {
             // Init properties
-            pluginManager.AddProperty(P_SPEED, this.GetType(), this.Speed.GetType());
-            pluginManager.AddProperty(P_RPMS, this.GetType(), this.RPM.GetType());
-            pluginManager.AddProperty(P_CURRENTGEAR, this.GetType(), this.Gear.GetType());
-            pluginManager.AddProperty(P_GAMEISRUNNING, this.GetType(), this.IsRunning.GetType());
-            pluginManager.AddProperty(P_DEBUG, this.GetType(), this.DEBUG.GetType());
+            foreach (var p in Properties)
+            {
+                pluginManager.AddProperty(p.Name, this.GetType(), p.Type);
+            }            
 
             // Here GameData == null
             // Here PluginManager == pluginManager  
@@ -128,35 +128,6 @@ namespace GTAVSimhub.Plugin
                 }
             }
             //}
-        }
-
-
-        public void setGameData(Object rawData, GameData data)
-        {
-            string[] sa = (string[])rawData;
-
-            if (rawData != null)
-            {
-                foreach (var s in sa)
-                {
-                    var property = getProperty(s);
-                    if (data.NewData != null)
-                    {
-                        if (property.Name.Equals(P_SPEED))
-                        {
-                            data.NewData.SpeedKmh = Convert.ToDouble(property.Value);
-                        }
-                        else if (property.Name.Equals(P_RPMS))
-                        {
-                            data.NewData.Rpms = Convert.ToDouble(property.Value);
-                        }
-                        else if (property.Name.Equals(P_CURRENTGEAR))
-                        {
-                            data.NewData.Gear = Convert.ToString(property.Value);
-                        }
-                    }
-                }
-            }
         }
 
         public Property getProperty(string s)
