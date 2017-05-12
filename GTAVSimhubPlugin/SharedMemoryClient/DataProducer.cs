@@ -84,7 +84,7 @@ namespace Mock.Plugin
             {
                 List<string> data = new List<string>();
 
-                data.Add(producer.dataRow("GameData.NewData.SpeedKmh", i));
+                data.Add(producer.dataRow("GameData.NewData.SpeedKmh", Convert.ToDouble(i)));
                
 
                 producer.Share(data.ToArray());

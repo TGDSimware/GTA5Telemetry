@@ -52,7 +52,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DataProducer.cs" />
-    <Compile Include="GTAVSimhubPlugin.cs" />
+    <Compile Include="GTAVPlugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

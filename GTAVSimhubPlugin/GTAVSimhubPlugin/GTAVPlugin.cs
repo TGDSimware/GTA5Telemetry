@@ -20,10 +20,11 @@ namespace GTAVSimhub.Plugin
     {
         DataProducer dataProducer;
 
-        const string P_CURRENTGEAR = "GameData.NewData.Gear";
-        const string P_SPEED = "GameData.NewData.SpeedKmh";
-        const string P_RPMS = "GameData.NewData.Rpms";
+        const string P_CURRENTGEAR = "Gear";
+        const string P_SPEED = "SpeedKmh";
+        const string P_RPMS = "Rpms";
         const string P_GAMEISRUNNING = "GameIsRunning";
+        const string P_DEBUG = "DEBUG";
 
         public GTAVSimHubClient()
         {
@@ -60,7 +61,7 @@ namespace GTAVSimhub.Plugin
 
                 dataList.Add(dataRow(P_RPMS, Convert.ToDouble(vehicle.CurrentRPM)));
                 dataList.Add(dataRow(P_SPEED, Convert.ToDouble(vehicle.Speed)));
-                dataList.Add(dataRow(P_CURRENTGEAR, Convert.ToInt32(vehicle.CurrentGear)));                
+                dataList.Add(dataRow(P_CURRENTGEAR, vehicle.CurrentGear == 0 ? "N" : vehicle.CurrentGear.ToString()));                
             }
             else
             {

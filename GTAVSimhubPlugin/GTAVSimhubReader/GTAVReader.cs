@@ -4,7 +4,6 @@ using GameReaderCommon;
 using SimHub.Plugins;
 using System.Windows.Forms;
 using System.Runtime.Serialization.Formatters.Binary;
-
 namespace GTAVSimhub.Plugin
 {
     class Property
@@ -15,31 +14,20 @@ namespace GTAVSimhub.Plugin
     }
 
     [PluginName("GTA V Reader")]
-    class GTAVReader : IPlugin, IGameManager, IDataPlugin
+    class GTAVReader : IPlugin, IDataPlugin
     {
-        // IDGameManager delegates: begin
-        public event NewLapDelegate NewLap;
-        public event SessionRestartDelegate SessionRestart;
-        public event TrackChangedDelegate TrackChanged;
-        public event GameRunningChangedDelegate GameStateChanged;
-        public event CarChangedDelegate CarChanged;
-        public event DataUpdatedDelegate DataUpdated;
-        // IDGameManager delegates: end
-
         // Private properties: begin
         private Double RPM = 0.0;
         private Int32 Speed = 0;
-        private Int32 Gear = 0;
-        private Int32 PlayerHealth = 0;
-        private Int32 GameIsRunning = 0;
-        private double _updateInterval = 15;
-        private string DEBUG = "OK";
+        private String Gear = "N";
+
+        private string DEBUG = "";
         //Private properties: end
 
         // Simhub "game-independent" Properties names
-        const string P_CURRENTGEAR = "GameData.NewData.Gear";
-        const string P_SPEED = "GameData.NewData.SpeedKmh";
-        const string P_RPMS = "GameData.NewData.Rpms";
+        const string P_CURRENTGEAR = "Gear";
+        const string P_SPEED = "SpeedKmh";
+        const string P_RPMS = "Rpms";
         const string P_GAMEISRUNNING = "GameIsRunning";
         const string P_DEBUG = "DEBUG";
 
@@ -49,13 +37,6 @@ namespace GTAVSimhub.Plugin
         /// </summary>
         public PluginManager PluginManager { get; set; }
 
-        // IGameManager required Properties: begin
-        public bool Enabled { get; set; }
-        public GameData GameData { get; }
-        public ReplayModes ReplayMode { get; set; }
-        public double UpdateInterval { get { return _updateInterval; } set { _updateInterval = UpdateInterval; } }
-        // IGameManager required Properties: end
-
         // The DataConsumer used for shared memory communication
         DataConsumer dataConsumer;
 
@@ -63,26 +44,14 @@ namespace GTAVSimhub.Plugin
         {
             // Init the shared memory buffer
             dataConsumer = new DataConsumer("GTAVSimHubPlugin");
-            GameData = new GameData();
-            GameData.GameRunning = true;
+            //_GameData = new GameData();
+            //GameData.GameRunning = true;           
         }
 
         private void debug(string message)
         {
-            PluginManager.SetPropertyValue(P_DEBUG, this.GetType(), message);
-        }
-
-        public void OnGameStateChanged(bool running, IGameManager manager)
-        {
-            debug("OnGameStateChanged: " + System.DateTime.Now.ToString());
-
-            if (running)
-            {
-                GameData.GameRunning = true;
-                GameData.NewData.SpeedKmh = 0;
-                GameData.NewData.Rpms = 0;
-                GameData.NewData.Gear = "N";
-            }
+            DEBUG += System.DateTime.Now.ToString() + ": " + message + "\n";
+            PluginManager.SetPropertyValue(P_DEBUG, this.GetType(), DEBUG);
         }
 
         /// <summary>
@@ -95,15 +64,11 @@ namespace GTAVSimhub.Plugin
             pluginManager.AddProperty(P_SPEED, this.GetType(), this.Speed.GetType());
             pluginManager.AddProperty(P_RPMS, this.GetType(), this.RPM.GetType());
             pluginManager.AddProperty(P_CURRENTGEAR, this.GetType(), this.Gear.GetType());
-            pluginManager.AddProperty(P_GAMEISRUNNING, this.GetType(), this.GameIsRunning.GetType());
+            pluginManager.AddProperty(P_GAMEISRUNNING, this.GetType(), this.Gear.GetType());
             pluginManager.AddProperty(P_DEBUG, this.GetType(), this.DEBUG.GetType());
 
-            GameStateChanged += OnGameStateChanged; //Add an handler for game state changed
-            Enabled = true;
-            ReplayMode = ReplayModes.Live;
-
             // Here GameData == null
-            // Here PluginManager == pluginManager          
+            // Here PluginManager == pluginManager  
         }
 
         /// <summary>
@@ -125,7 +90,7 @@ namespace GTAVSimhub.Plugin
         /// <returns></returns>
         public System.Windows.Forms.Control GetSettingsControl(PluginManager pluginManager)
         {
-            return null;
+            return new UserControl();
         }
 
         /// <summary>
@@ -135,102 +100,56 @@ namespace GTAVSimhub.Plugin
         /// <param name="data"></param>
         public void DataUpdate(PluginManager pluginManager, GameData data)
         {
-            if (data.GameRunning)
-            {
-                pluginManager.SetPropertyValue(P_GAMEISRUNNING, this.GetType(), 1);
-                GameData.GameRunning = true;
-            }
-            else
-            {
-                pluginManager.SetPropertyValue(P_GAMEISRUNNING, this.GetType(), 0);
-                GameData.GameRunning = false;
-            }
-
-            string[] rawData = (string[])dataConsumer.GetSharedData();
+            // The plugin will work only when the active gamemanager doesn't detect his game
+            //if (!data.GameRunning)
+            //{
+            Object rawData = dataConsumer.GetSharedData();
 
             if (rawData != null)
             {
-                foreach (var s in rawData)
+                //setGameData(rawData, data);
+
+                foreach (var s in (string[])rawData)
                 {
+                    // Set plugin properties
+                    //debug(s);
                     var property = getProperty(s);
+                    //debug(property.Name + " " + this.GetType() + " " + property.Value);
                     pluginManager.SetPropertyValue(property.Name, this.GetType(), property.Value);
+
                 }
             }
+            //}
         }
 
-        // IGameManager required methods: begin
-        public string GameName()
-        {
-            return "GTA5";
-        }
 
-        public GameCar GetCar(string carCode)
+        public void setGameData(Object rawData, GameData data)
         {
-            return new GameCar { Name = "Car", Picture = null };
-        }
-
-        public IEnumerable<string> GetProcesseNames()
-        {
-            String[] processNames = { "GTA5", "GTA5.exe", "GTA 5", "GTA 5.exe", "chrome.exe", "chrome" };
-            return processNames;
-        }
-
-        public object GetRawDataSample()
-        {
-            debug("GETRAWDATASAMPLE: " +
-               System.DateTime.Now.ToString());
-
-            string[] rawData = (string[])dataConsumer.GetSharedData();
+            string[] sa = (string[])rawData;
 
             if (rawData != null)
             {
-                foreach (var s in rawData)
+                foreach (var s in sa)
                 {
                     var property = getProperty(s);
-
-                    if (property.Name.Equals(P_SPEED))
+                    if (data.NewData != null)
                     {
-                        GameData.NewData.SpeedKmh = Convert.ToDouble(property.Value);
-                    }
-                    else if (property.Name.Equals(P_RPMS))
-                    {
-                        GameData.NewData.Rpms = Convert.ToDouble(property.Value);
-                    }
-                    else if (property.Name.Equals(P_CURRENTGEAR))
-                    {
-                        GameData.NewData.Gear = Convert.ToString(property.Value);
+                        if (property.Name.Equals(P_SPEED))
+                        {
+                            data.NewData.SpeedKmh = Convert.ToDouble(property.Value);
+                        }
+                        else if (property.Name.Equals(P_RPMS))
+                        {
+                            data.NewData.Rpms = Convert.ToDouble(property.Value);
+                        }
+                        else if (property.Name.Equals(P_CURRENTGEAR))
+                        {
+                            data.NewData.Gear = Convert.ToString(property.Value);
+                        }
                     }
                 }
             }
-
-            return rawData;
         }
-
-        public DataRecordBase GetReferenceMapRecord()
-        {
-            return null;
-        }
-
-        public GameTrack GetTrack(string trackCode)
-        {
-            return null;
-        }
-
-        public void Start()
-        {
-
-        }
-
-        public void Stop()
-        {
-
-        }
-
-        public double[] ToAbsoluteCoordinates(double[] source)
-        {
-            return source;
-        }
-        // IGameManager required methods: end
 
         public Property getProperty(string s)
         {
