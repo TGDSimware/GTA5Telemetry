@@ -6,10 +6,10 @@ using System.Runtime.InteropServices;
 // set di attributi. Modificare i valori di questi attributi per modificare le informazioni
 // associate a un assembly.
 [assembly: AssemblyTitle("GTAVReader")]
-[assembly: AssemblyDescription("GTAV Simhub Reader")]
+[assembly: AssemblyDescription("GTAV Reader Plugin for SimHub")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("GTAVSReader")]
+[assembly: AssemblyCompany("The Green Dragon Youtube Channel")]
+[assembly: AssemblyProduct("GTAVReader")]
 [assembly: AssemblyCopyright("Copyright ©  2017 Carlo Iovino")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -32,5 +32,5 @@ using System.Runtime.InteropServices;
 // È possibile specificare tutti i valori oppure impostare valori predefiniti per i numeri relativi alla revisione e alla build
 // usando l'asterisco '*' come illustrato di seguito:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.0.0.0")]
-[assembly: AssemblyFileVersion("1.0.0.0")]
+[assembly: AssemblyVersion("0.0.0.1")]
+[assembly: AssemblyFileVersion("0.0.0.1")]
