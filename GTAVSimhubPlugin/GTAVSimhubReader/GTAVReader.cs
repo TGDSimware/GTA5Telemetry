@@ -4,6 +4,8 @@ using GameReaderCommon;
 using SimHub.Plugins;
 using System.Windows.Forms;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Diagnostics;
+
 namespace GTAVSimhub.Plugin
 {
     class Property
@@ -18,8 +20,9 @@ namespace GTAVSimhub.Plugin
     {
         // Private properties: begin
         private Double RPM = 0.0;
-        private Int32 Speed = 0;
+        private Double Speed = 0;
         private String Gear = "N";
+        private Int32 IsRunning = 0;
 
         private string DEBUG = "";
         //Private properties: end
@@ -64,7 +67,7 @@ namespace GTAVSimhub.Plugin
             pluginManager.AddProperty(P_SPEED, this.GetType(), this.Speed.GetType());
             pluginManager.AddProperty(P_RPMS, this.GetType(), this.RPM.GetType());
             pluginManager.AddProperty(P_CURRENTGEAR, this.GetType(), this.Gear.GetType());
-            pluginManager.AddProperty(P_GAMEISRUNNING, this.GetType(), this.Gear.GetType());
+            pluginManager.AddProperty(P_GAMEISRUNNING, this.GetType(), this.IsRunning.GetType());
             pluginManager.AddProperty(P_DEBUG, this.GetType(), this.DEBUG.GetType());
 
             // Here GameData == null
@@ -101,22 +104,27 @@ namespace GTAVSimhub.Plugin
         public void DataUpdate(PluginManager pluginManager, GameData data)
         {
             // The plugin will work only when the active gamemanager doesn't detect his game
-            //if (!data.GameRunning)
-            //{
-            Object rawData = dataConsumer.GetSharedData();
+            if (!data.GameRunning)
+            {             
+                //Process[] ps = Process.GetProcessesByName("GTA5");
+                //if (ps.Length > 0) {
 
-            if (rawData != null)
-            {
-                //setGameData(rawData, data);
+                Object rawData = dataConsumer.GetSharedData();
 
-                foreach (var s in (string[])rawData)
+                if (rawData != null)
                 {
-                    // Set plugin properties
-                    //debug(s);
-                    var property = getProperty(s);
-                    //debug(property.Name + " " + this.GetType() + " " + property.Value);
-                    pluginManager.SetPropertyValue(property.Name, this.GetType(), property.Value);
+                    //setGameData(rawData, data);
+                    //pluginManager.SetPropertyValue(P_GAMEISRUNNING, this.GetType(), 1);
 
+                    foreach (var s in (string[])rawData)
+                    {
+                        // Set plugin properties
+                        //debug(s);
+                        var property = getProperty(s);
+                        //debug(property.Name + " " + this.GetType() + " " + property.Value);
+                        pluginManager.SetPropertyValue(property.Name, this.GetType(), property.Value);
+
+                    }
                 }
             }
             //}
@@ -171,7 +179,7 @@ namespace GTAVSimhub.Plugin
                     }
                     else if (type.Equals("Double"))
                     {
-                        value = Convert.ToDouble(token[2]);
+                        value = Convert.ToDouble(token[2].Replace(',','.'));
                     }
                     else if (type.Equals("Int32"))
                     {

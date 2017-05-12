@@ -5,7 +5,7 @@ using GTA.Native;
 using System.Windows.Forms;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.IO;
-
+using System.Globalization;
 
 /// <summary>
 /// GTA V Simhub Plugin
@@ -35,12 +35,20 @@ namespace GTAVSimhub.Plugin
             //ScriptSettings.load(fileName)
         }
 
-        string dataRow(string property, object value)
+        string Packet(string property, object value)
         {
             string type;
 
+            NumberFormatInfo nfi = new NumberFormatInfo();
+            nfi.NumberDecimalSeparator = ".";
+
             type = value.GetType().Name;
-            string r = property + ":" + type + ":" + value.ToString();
+            if (value.GetType() == typeof(Double))
+            {
+
+                value = ((Double)value).ToString(CultureInfo.InvariantCulture.NumberFormat);
+            }
+            string r = property + ":" + type + ":" + value;
             return r;
         }
 
@@ -59,15 +67,15 @@ namespace GTAVSimhub.Plugin
                 // Player in vehicle
                 Vehicle vehicle = player.CurrentVehicle;
 
-                dataList.Add(dataRow(P_RPMS, Convert.ToDouble(vehicle.CurrentRPM)));
-                dataList.Add(dataRow(P_SPEED, Convert.ToDouble(vehicle.Speed)));
-                dataList.Add(dataRow(P_CURRENTGEAR, vehicle.CurrentGear == 0 ? "N" : vehicle.CurrentGear.ToString()));                
+                dataList.Add(Packet(P_RPMS, Convert.ToDouble(vehicle.CurrentRPM)));
+                dataList.Add(Packet(P_SPEED, Convert.ToDouble(vehicle.Speed)));
+                dataList.Add(Packet(P_CURRENTGEAR, vehicle.CurrentGear == 0 ? "N" : vehicle.CurrentGear.ToString()));                
             }
             else
             {
-                dataList.Add(dataRow(P_RPMS, Convert.ToDouble(player.IsInCombat ? 100 : 0)));
-                dataList.Add(dataRow(P_SPEED, Convert.ToDouble(player.Health)));
-                dataList.Add(dataRow(P_CURRENTGEAR, Convert.ToInt32(0)));
+                dataList.Add(Packet(P_RPMS, Convert.ToDouble(player.IsInCombat ? 100 : 0)));
+                dataList.Add(Packet(P_SPEED, Convert.ToDouble(player.Health)));
+                dataList.Add(Packet(P_CURRENTGEAR, Convert.ToInt32(0)));
             }
 
             // Share data

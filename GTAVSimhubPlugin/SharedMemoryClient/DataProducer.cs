@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -17,12 +18,20 @@ namespace Mock.Plugin
         private BinaryFormatter binaryFormatter = new BinaryFormatter();
         private SharedMemory.SharedArray<byte> sharedBuffer = null;
 
-        string dataRow(string property, object value)
+        string packet(string property, object value)
         {
             string type;
 
+            NumberFormatInfo nfi = new NumberFormatInfo();
+            nfi.NumberDecimalSeparator = ".";
+
             type = value.GetType().Name;
-            string r = property + ":" + type + ":" + value.ToString();
+            if (value.GetType() == typeof(Double))
+            {
+
+                value = ((Double)value).ToString(CultureInfo.InvariantCulture.NumberFormat);
+            }
+            string r = property + ":" + type + ":" + value;
             return r;
         }
 
@@ -79,12 +88,12 @@ namespace Mock.Plugin
             //binaryFormatter.Binder = new CurrentAssemblyDeserializationBinder();
             var producer = new DataProducer("GTAVSimHubPlugin");
 
-
             for (int i=0;;i++)
             {
                 List<string> data = new List<string>();
+                float v = 80.22231f + (float) i;
 
-                data.Add(producer.dataRow("GameData.NewData.SpeedKmh", Convert.ToDouble(i)));
+                data.Add(producer.packet("SpeedKmh", Convert.ToDouble(v)));
                
 
                 producer.Share(data.ToArray());
