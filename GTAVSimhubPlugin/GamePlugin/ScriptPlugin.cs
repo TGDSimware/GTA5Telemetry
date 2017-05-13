@@ -43,7 +43,16 @@ namespace GTAVSimhub.Plugin
                 
                 data.Speed = vehicle.Speed;
                 data.EngineRevs = vehicle.CurrentRPM;
-                data.Gear = vehicle.CurrentGear > 7 || vehicle.CurrentGear < 0 ? 11 : vehicle.CurrentGear;
+                if (vehicle.EngineRunning)
+                {
+                    data.Gear = 0;
+                }
+                else
+                {
+                    data.Gear = vehicle.CurrentGear == 0 ? 10 : vehicle.CurrentGear;
+                }
+                
+                data.Lap = vehicle.CurrentGear;               
                 data.MaxRpm = 1;
                 data.IdleRpm = 0.2f;
                 data.FuelRemaining = vehicle.FuelLevel;
@@ -52,7 +61,7 @@ namespace GTAVSimhub.Plugin
             {
                 // Player on foot
                 data.Speed = player.Health;
-                data.EngineRevs = player.Health / 395f;
+                data.EngineRevs = player.IsShooting ? 1 : 0;
                 data.Gear = 1;
             }
 
