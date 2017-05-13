@@ -14,11 +14,11 @@ namespace Mock.Plugin
 {
 
     sealed class DataProducer : IDisposable
-    {       
+    {
         private BinaryFormatter binaryFormatter = new BinaryFormatter();
         private SharedMemory.SharedArray<byte> sharedBuffer = null;
 
-        string packet(string property, object value)
+        /*string packet(string property, object value)
         {
             string type;
 
@@ -33,9 +33,9 @@ namespace Mock.Plugin
             }
             string r = property + ":" + type + ":" + value;
             return r;
-        }
+        }*/
 
-        private byte[] ToBinary(Object source)
+        /*private byte[] ToBinary(Object source)
         {
             using (var ms = new MemoryStream())
             {
@@ -43,11 +43,10 @@ namespace Mock.Plugin
                 ms.Flush();
                 return ms.ToArray();
             }
-        }
+        }*/
 
-        public void Share(Object o)
+        public void Share(byte[] rawData)
         {
-            byte[] rawData = ToBinary(o);
             int dataSize = rawData.Length;
 
             // Write the dataSize and the rawData into the shared buffer
@@ -83,21 +82,29 @@ namespace Mock.Plugin
             }
         }
 
+        static TelemetryPacket packet = new TelemetryPacket();
+
         static void Main(string[] args)
         {
             //binaryFormatter.Binder = new CurrentAssemblyDeserializationBinder();
             var producer = new DataProducer("GTAVSimHubPlugin");
 
-            for (int i=0;;i++)
+            for (int i = 0; ; i++)
             {
-                List<string> data = new List<string>();
-                float v = 80.22231f + (float) i;
+                //List<string> data = new List<string>();
+                float v = 80.22231f + (float)i;
 
-                data.Add(producer.packet("SpeedKmh", Convert.ToDouble(v)));
-               
+                packet.Speed = v;
+                packet.Gear = i;
+                packet.Rpms = i * 4d;
+                packet.VehicleName = "Carlo";
 
-                producer.Share(data.ToArray());
-                Thread.Sleep(100);                           
+                byte[] data = PacketUtilities.ConvertPacketToByteArray(packet);
+                //data.Add(producer.packet("SpeedKmh", Convert.ToDouble(v)));
+
+
+                producer.Share(data);
+                Thread.Sleep(100);
             }
         }
 

@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using GameReaderCommon;
 using SimHub.Plugins;
+using GameReaderCommon;
 using System.Windows.Forms;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.Diagnostics;
 
-namespace GTAVSimhub.Plugin
+namespace GTA5Simhub.DataPlugin
 {
     class Property
     {
@@ -17,8 +14,8 @@ namespace GTAVSimhub.Plugin
         public Property(string n, Type t, Object v) { Name = n; Type = t; Value = v; }
     }
 
-    [PluginName("GTA V Reader")]
-    class GTAVReader : IPlugin, IDataPlugin
+    [PluginName("GTA 5 Data Plugin")]
+    class GTA5 : IPlugin, IDataPlugin
     {
         private string DEBUG = "";
         //Private properties: end
@@ -46,7 +43,7 @@ namespace GTAVSimhub.Plugin
         // The DataConsumer used for shared memory communication
         DataConsumer dataConsumer;
 
-        public GTAVReader()
+        public GTA5()
         {
             // Init the shared memory buffer
             dataConsumer = new DataConsumer("GTAVSimHubPlugin");        
@@ -105,26 +102,22 @@ namespace GTAVSimhub.Plugin
         {
             // The plugin will work only when the active gamemanager doesn't detect his game
             if (!data.GameRunning)
-            {             
+            {
                 //Process[] ps = Process.GetProcessesByName("GTA5");
                 //if (ps.Length > 0) {
 
-                Object rawData = dataConsumer.GetSharedData();
+                byte[] bytes = dataConsumer.GetSharedData();
+                
 
-                if (rawData != null)
+                if (bytes != null)
                 {
-                    //setGameData(rawData, data);
-                    //pluginManager.SetPropertyValue(P_GAMEISRUNNING, this.GetType(), 1);
+                    TelemetryPacket packet = PacketUtilities.ConvertToPacket(bytes);
 
-                    foreach (var s in (string[])rawData)
-                    {
-                        // Set plugin properties
-                        //debug(s);
-                        var property = getProperty(s);
-                        //debug(property.Name + " " + this.GetType() + " " + property.Value);
-                        pluginManager.SetPropertyValue(property.Name, this.GetType(), property.Value);
 
-                    }
+                    pluginManager.SetPropertyValue("SpeedKmh", this.GetType(), Convert.ToDouble(packet.Speed));
+                    pluginManager.SetPropertyValue("Rpms", this.GetType(), Convert.ToDouble(packet.Rpms));
+                    pluginManager.SetPropertyValue("Gear", this.GetType(), Convert.ToString(packet.Gear));
+                    //pluginManager.SetPropertyValue("Weapon", this.GetType(), packet.Weapon);                   
                 }
             }
             //}
@@ -158,7 +151,7 @@ namespace GTAVSimhub.Plugin
                     }
                 }
             }
-            return new Property { Name = name, Type = value.GetType(), Value = value };
+            return new Property(name, value.GetType(), value);
         }
     }
 }

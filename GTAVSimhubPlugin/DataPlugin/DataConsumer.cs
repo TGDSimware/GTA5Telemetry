@@ -1,22 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.IO;
-using System.Reflection;
-using System.Runtime.Serialization;
 
-namespace GTAVSimhub.Plugin
+namespace GTA5Simhub.DataPlugin
 {
-    [Serializable]
-    class Message
-    {
-        public String Property { get; set; }
-        public String Value { get; set; }
-    }
-
     class DataConsumer : IDisposable
     {
         private BinaryFormatter binaryFormatter = new BinaryFormatter();
@@ -52,18 +40,21 @@ namespace GTAVSimhub.Plugin
             {
                 // Creates the shared array if it doesn't exist
                 sharedBuffer = new SharedMemory.SharedArray<byte>(name: memId, length: 65535);
+                sharedBuffer.AcquireWriteLock();
+                sharedBuffer.Write(new byte[] { 0, 0, 0, 0 });
+                sharedBuffer.ReleaseWriteLock();
             }
         }
 
-        public Object GetSharedData()
+        public byte[] GetSharedData()
         {
             try
             {
                 sharedBuffer.AcquireReadLock();
-                Object o = null;
+                byte[] data = null;
 
                 // Get the message size, 0 = no data available
-                if (sharedBuffer.Length > 2)
+                if (sharedBuffer.Length > 4)
                 {
                     // Get the message size (first 4 bytes), 0 = no data available
                     byte[] b2 = sharedBuffer.Take(4).ToArray();
@@ -73,40 +64,20 @@ namespace GTAVSimhub.Plugin
                     if (dataSize > 0)
                     {
                         // Get the serialized object
-                        Byte[] data = sharedBuffer.Skip(4).Take(dataSize).ToArray<Byte>();
+                        data = sharedBuffer.Skip(4).Take(dataSize).ToArray<Byte>();
 
-                        o = toObject(data);
+                        //o = toObject(data);
                     }
+                    else return null;
                 }
 
                 sharedBuffer.ReleaseReadLock();
-                return o;
+                return data;
             }
-            catch (TimeoutException e)
+            catch (Exception e)
             {
                 return null;
             }
-        }
-
-        static void Main(string[] args)
-        {
-
-            DataConsumer dc = new DataConsumer("GTAV");
-            {
-
-                while (true)
-                {
-                    string[] a = (string[])dc.GetSharedData();
-
-                    if ( a != null ) {
-                        foreach (var s in a)
-                        {
-                            Console.WriteLine(s);
-                        }
-                    }
-                }
-            }
-
         }
 
         #region IDisposable Support

@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Sockets;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
@@ -11,57 +13,43 @@ using System.Threading.Tasks;
 
 namespace GTAVSimhub.Plugin
 {
-    sealed class DataProducer : IDisposable
+    sealed class TelemetryWriter : IDisposable
     {
-        private BinaryFormatter binaryFormatter = new BinaryFormatter();
-        private SharedMemory.SharedArray<byte> sharedBuffer = null;
-
-        private byte[] ToBinary(Object source)
-        {
-            using (var ms = new MemoryStream())
-            {
-                binaryFormatter.Serialize(ms, source);
-                ms.Flush();
-                return ms.ToArray();
-            }
-        }
-
-        public void Share(Object o)
-        {
-            byte[] rawData = ToBinary(o);
-            int dataSize = rawData.Length;
-
-            // Write the dataSize and the rawData into the shared buffer
-            Byte[] buf = new Byte[4 + dataSize];
-            Array.Copy(BitConverter.GetBytes(dataSize), buf, 4);
-            Array.Copy(rawData, 0, buf, 4, rawData.Length);
-
-            try
-            {
-                // Acquire the write lock
-                sharedBuffer.AcquireWriteLock();
-                // Write binary data
-                sharedBuffer.Write(buf);
-                // Release the write lock
-                sharedBuffer.ReleaseWriteLock();
-            }
-            catch (TimeoutException e)
-            {
-                Console.Write(e.Message);
-            }
-        }
+        private IPEndPoint senderIP = new IPEndPoint(IPAddress.Any, 0);
+        private UdpClient udpClient;
 
         // Class constructor
-        public DataProducer(string memId)
+        public TelemetryWriter(int port)
         {
             try
             {
-                sharedBuffer = new SharedMemory.SharedArray<byte>(name: memId);
+                this.InitUdp(port);
             }
             catch (Exception e)
             {
-                sharedBuffer = new SharedMemory.SharedArray<byte>(name: memId, length: 65535);
+                
             }
+        }
+
+        private void InitUdp(int port)
+        {
+            try
+            {
+                if (this.udpClient == null)
+                {
+                    this.udpClient = new UdpClient();
+                    this.udpClient.Connect("127.0.0.1", port);                    
+                }
+            }
+            catch
+            {
+                this.udpClient = null;
+            }
+        }
+
+        public void SendPacket(byte[] data)
+        {
+            this.udpClient.SendAsync(data, data.Length);
         }
 
         #region IDisposable Support
@@ -73,8 +61,7 @@ namespace GTAVSimhub.Plugin
             {
                 if (disposing)
                 {
-                    // TODO: eliminare lo stato gestito (oggetti gestiti).
-                    sharedBuffer.Dispose();
+                    udpClient.Close();
                 }
 
                 // TODO: liberare risorse non gestite (oggetti non gestiti) ed eseguire sotto l'override di un finalizzatore.
@@ -85,7 +72,7 @@ namespace GTAVSimhub.Plugin
         }
 
         // TODO: eseguire l'override di un finalizzatore solo se Dispose(bool disposing) include il codice per liberare risorse non gestite.
-        // ~Producer() {
+        // ~TelemetryWriter() {
         //   // Non modificare questo codice. Inserire il codice di pulizia in Dispose(bool disposing) sopra.
         //   Dispose(false);
         // }

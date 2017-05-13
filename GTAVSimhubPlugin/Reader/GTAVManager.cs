@@ -1,37 +1,47 @@
-﻿using System;
-using System.Collections.Generic;
-using GameReaderCommon;
-using SimHub.Plugins;
-using System.Windows.Forms;
-using System.Runtime.Serialization.Formatters.Binary;
+﻿using GameReaderCommon;
+using System;
 
-namespace GTAVReader
+namespace GTA5Reader
 {
-    [PluginName("GTA 5")]
-    class GTAVManager : GameManagerBase<byte[], string[]>, IPlugin
-
+    public class GTA5Manager :  GameManagerBase<TelemetryPacket, TelemetryReader>
     {
-        public PluginManager PluginManager { get;  set; }
-
-        public GTAVManager(string gameName, params string[] processnames) : base(gameName, processnames)
+        public GTA5Manager() : base("GTA5", new string[]
         {
-            gameName = "GTA 5";
-            processnames = new String[] { "GTA5.exe"};
+            "GTA5", "chrome"
+        })
+        {
+            /*int port = 20777;
+            if (!int.TryParse(ConfigurationManager.AppSettings["CodemastersUDPPort"], out port))
+            {
+                port = 20777;
+            }*/
+            this.datareader = new TelemetryReader();
         }
 
-        public override void Exit()
-        {
-            
+        public GTA5Manager(int port) : base("GTA5", new string[]
+		{
+            "GTA5", "chrome"
+        })
+		{
+            this.datareader = new TelemetryReader();
         }
 
-        protected override byte[] GetNewRawData()
+        /*public CodemastersManager(int port) : base("GTA 5", new string[]
         {
-            return null;
+            "GTA 5"
+        })
+        {
+            this.datareader = new TelemetryReader(port);
+        }*/
+
+        protected override TelemetryPacket GetNewRawData()
+        {
+            return this.datareader.LatestData;
         }
 
-        public override byte[] GetDataSample()
+        protected override int GD_CurrentSectorIndex()
         {
-            return null;
+            return 0;
         }
 
         public override bool IsGameInRace()
@@ -46,87 +56,111 @@ namespace GTAVReader
 
         protected override bool IsGameRunning()
         {
-            return false;
+            return this.datareader.IsRunning;
         }
 
-        protected override void PreParseData()
+        public override void Exit()
         {
-
+            this.datareader.Dispose();
         }
 
+        public override TelemetryPacket GetDataSample()
+        {
+            return default(TelemetryPacket);
+        }
+
+        protected override double GD_SpeedKmh()
+        {
+            return (double)base.NewRawData.SpeedKMH;
+        }
+
+        protected override double GD_Rpms()
+        {
+            return 0;
+        }
+
+        protected override string GD_Gear()
+        {
+            return this.datareader.GetGear((int)base.NewRawData.Gear);
+        }
+
+        /******************************************************************/
         protected override TimeSpan GD_AllTimeBest()
         {
-            return new TimeSpan();
+            return TimeSpan.Zero;
         }
 
         protected override TimeSpan GD_BestLapTime()
         {
-            return new TimeSpan();
+            return TimeSpan.Zero;
         }
 
         protected override double GD_Brake()
         {
-            return 0;
+            return 0.0;
         }
 
         protected override double GD_BrakeTemperature1()
         {
-            return 0;
+            return 0.0;
         }
 
         protected override double GD_BrakeTemperature2()
         {
-            return 0;
+            return 0.0;
         }
 
         protected override double GD_BrakeTemperature3()
         {
-            return 0;
+            return 0.0;
         }
 
         protected override double GD_BrakeTemperature4()
         {
-            return 0;
+            return 0.0;
         }
 
         protected override double[] GD_CarCoordinates()
         {
-            return null;
+            return new double[]
+            {
+                0,0,0
+            };
         }
 
         protected override double GD_CarDamage1()
         {
-            return 0;
+            return 0.0;
         }
 
         protected override double GD_CarDamage2()
         {
-            return 0;
+            return 0.0;
         }
 
         protected override double GD_CarDamage3()
         {
-            return 0;
+            return 0.0;
         }
 
         protected override double GD_CarDamage4()
         {
-            return 0;
+            return 0.0;
         }
 
         protected override double GD_CarDamage5()
         {
-            return 0;
+            return 0.0;
         }
 
         protected override string GD_CarModel()
         {
-            return "UNKNOWN";
+            return null;
         }
 
         protected override double GD_Clutch()
         {
-            return 0;
+            return 0.0;
         }
 
         protected override int GD_CompletedLaps()
@@ -136,37 +170,32 @@ namespace GTAVReader
 
         protected override TimeSpan GD_CurrentLapTime()
         {
-            return new TimeSpan(0);
-        }
-
-        protected override int GD_CurrentSectorIndex()
-        {
-            return 0;
+            return TimeSpan.Zero;
         }
 
         protected override double? GD_DeltaToAllTimeBest()
         {
-            return 0;
+            return null;
         }
 
         protected override double? GD_DeltaToSessionBest()
         {
-            return 0;
+            return null;
         }
 
         protected override double GD_Engine_OilPressure()
         {
-            return 0;
+            return 0.0;
         }
 
         protected override double GD_Engine_OilTemperature()
         {
-            return 0;
+            return 0.0;
         }
 
         protected override double GD_Engine_WaterTemperature()
         {
-            return 0;
+            return 0.0;
         }
 
         protected override int GD_Flag_Black()
@@ -175,8 +204,8 @@ namespace GTAVReader
         }
 
         protected override int GD_Flag_Blue()
-        {
-            return 0;
+        {            
+                return 0;            
         }
 
         protected override int GD_Flag_Checkered()
@@ -190,13 +219,13 @@ namespace GTAVReader
         }
 
         protected override int GD_Flag_Yellow()
-        {
-            return 0;
+        {          
+                return 0;          
         }
 
         protected override double GD_Fuel()
         {
-            return 0;
+            return 0; // fuel remaining
         }
 
         protected override double GD_Gas()
@@ -204,44 +233,9 @@ namespace GTAVReader
             return 0;
         }
 
-        protected override string GD_Gear()
-        {
-            return "N";
-        }
-
         protected override int GD_IsInPit()
         {
-            return 0;
-        }
-
-        protected override int GD_IsInPitLane()
-        {
-            return 0;
-        }
-
-        protected override TimeSpan GD_LastLapTime()
-        {
-            return new TimeSpan(0);
-        }
-
-        protected override TimeSpan GD_LastSectorTime()
-        {
-            return new TimeSpan(0);
-        }
-
-        protected override double GD_MaxFuel()
-        {
-            return 0;
-        }
-
-        protected override double GD_MaxRpm()
-        {
-            return 0;
-        }
-
-        protected override double GD_MaxTurbo()
-        {
-            return 0;
+                return 0;        
         }
 
         protected override int GD_PitLimiterOn()
@@ -249,32 +243,49 @@ namespace GTAVReader
             return 0;
         }
 
-        protected override int GD_Position()
-        {
-            return 0;
+        protected override int GD_IsInPitLane()
+        {            
+                return 0;            
         }
 
-        protected override double GD_Rpms()
+        protected override TimeSpan GD_LastLapTime()
+        {
+            return TimeSpan.Zero;
+        }
+
+        protected override TimeSpan GD_LastSectorTime()
+        {
+            return TimeSpan.Zero;
+        }
+
+        protected override double GD_MaxFuel()
+        {
+            return 100.0;
+        }
+
+        protected override double GD_MaxRpm()
+        {
+            return 1.0;
+        }
+
+        protected override double GD_MaxTurbo()
+        {
+            return 1.0;
+        }
+
+        protected override int GD_Position()
         {
             return 0;
         }
 
         protected override TimeSpan GD_SessionTimeLeft()
         {
-            return new TimeSpan(0);
+            return TimeSpan.Zero;
         }
 
         protected override string GD_SessionTypeName()
         {
-            return "UNKNOWN";
-        }
-        /// <summary>
-        /// /////////////////////////////////////////////////////////////////////////////////
-        /// </summary>
-        /// <returns></returns>
-        protected override double GD_SpeedKmh()
-        {
-            return 0;
+            return "";
         }
 
         protected override int GD_TotalLaps()
@@ -284,92 +295,81 @@ namespace GTAVReader
 
         protected override string GD_TrackConfig()
         {
-            return "UNKNOWN";
+            return null;
         }
 
         protected override string GD_TrackName()
         {
-            return "UNKNOWN";
+            return "unknown";
         }
 
         protected override double GD_Turbo()
         {
-            return 0;
+            return 0.0;
         }
 
         protected override double GD_TyreCoreTemperature1()
         {
-            return 0;
+            return 0.0;
         }
 
         protected override double GD_TyreCoreTemperature2()
         {
-            return 0;
+            return 0.0;
         }
 
         protected override double GD_TyreCoreTemperature3()
         {
-            return 0;
+            return 0.0;
         }
 
         protected override double GD_TyreCoreTemperature4()
         {
-            return 0;
+            return 0.0;
         }
 
         protected override double GD_TyreDirtyLevel1()
         {
-            return 0;
+            return 0.0;
         }
 
         protected override double GD_TyreDirtyLevel2()
         {
-            return 0;
+            return 0.0;
         }
 
         protected override double GD_TyreDirtyLevel3()
         {
-            return 0;
+            return 0.0;
         }
 
         protected override double GD_TyreDirtyLevel4()
         {
-            return 0;
+            return 0.0;
         }
 
         protected override double GD_TyreWear1()
         {
-            return 0;
+            return 0.0;
         }
 
         protected override double GD_TyreWear2()
         {
-            return 0;
+            return 0.0;
         }
 
         protected override double GD_TyreWear3()
         {
-            return 0;
+            return 0.0;
         }
 
         protected override double GD_TyreWear4()
         {
-            return 0;
+            return 0.0;
         }
 
-        public void Init(PluginManager pluginManager)
+        protected override void PreParseData()
         {
-         
-        }
-
-        public void End(PluginManager pluginManager)
-        {
-            
-        }
-
-        public Control GetSettingsControl(PluginManager pluginManager)
-        {
-            return new UserControl();
         }
     }
 }
