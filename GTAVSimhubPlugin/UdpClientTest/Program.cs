@@ -26,7 +26,12 @@ namespace UdpClientTest
                 TelemetryPacket data = new TelemetryPacket();
                 // Player on foot
                 data.Speed = v;
-                data.IdleRpm = i * 4f;
+                data.IdleRpm = 0;
+                data.EngineRevs = ((float)i / 10f );
+                data.MaxRpm = 1;
+                data.IdleRpm = 0.2f;
+                data.Throttle = i * 4;
+                
                 data.Gear = i;
 
                 //data.Add(producer.packet("SpeedKmh", Convert.ToDouble(v)));
