@@ -1,11 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using GTA;
-using GTA.Native;
-using System.Windows.Forms;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.IO;
-using System.Globalization;
 using CodemastersReader;
 
 /// <summary>
