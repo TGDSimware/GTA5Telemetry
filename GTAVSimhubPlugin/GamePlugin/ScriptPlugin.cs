@@ -43,15 +43,20 @@ namespace GTAVSimhub.Plugin
                 
                 data.Speed = vehicle.Speed;
                 data.EngineRevs = vehicle.CurrentRPM;
-                if (vehicle.EngineRunning)
+
+
+                if (vehicle.CurrentGear == 0 ? 10) {
+                    data.Gear = 10;
+                }
+                else if (vehicle.CurrentGear > 0)
                 {
-                    data.Gear = 0;
+                    data.Gear = vehicle.CurrentGear;
                 }
                 else
                 {
-                    data.Gear = vehicle.CurrentGear == 0 ? 10 : vehicle.CurrentGear;
+                    data.Gear = 0;
                 }
-                
+
                 data.Lap = vehicle.CurrentGear;               
                 data.MaxRpm = 1;
                 data.IdleRpm = 0.2f;

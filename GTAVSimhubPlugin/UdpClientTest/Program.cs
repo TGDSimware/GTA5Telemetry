@@ -32,7 +32,7 @@ namespace UdpClientTest
                 data.IdleRpm = 0.2f;
                 data.Throttle = i * 4;
                 
-                data.Gear = i;
+                data.Gear = 10;
 
                 //data.Add(producer.packet("SpeedKmh", Convert.ToDouble(v)));
 
