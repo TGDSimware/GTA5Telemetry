@@ -52,7 +52,7 @@ namespace GTAVSimhub.Plugin
             {
                 // Player on foot
                 data.Speed = player.Health;
-                data.EngineRevs = player.IsShooting ? 100f : 0f;
+                data.EngineRevs = player.Health / 395f;
                 data.Gear = 1;
             }
 
