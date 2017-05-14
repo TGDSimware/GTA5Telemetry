@@ -7,8 +7,8 @@
     <ProjectGuid>{F9B5EF01-8C96-4B49-8EDD-475D0F45D441}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>GTAVPlugin</RootNamespace>
-    <AssemblyName>GTAVPlugin</AssemblyName>
+    <RootNamespace>GTA5CodemastersTelemetryPlugin</RootNamespace>
+    <AssemblyName>GTA5CodemastersTelemetryPlugin</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />

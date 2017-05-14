@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // Le informazioni generali relative a un assembly sono controllate dal seguente 
 // set di attributi. Modificare i valori di questi attributi per modificare le informazioni
 // associate a un assembly.
-[assembly: AssemblyTitle("GTAVPlugin")]
-[assembly: AssemblyDescription("GTA V Plugin for Simhub")]
+[assembly: AssemblyTitle("GTA5CodemastersTelemetryPlugin")]
+[assembly: AssemblyDescription("Thanks to this plugin GTA 5 can send telemetry data like a codemasters game do!")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("The Green Dragon Youtube Channel")]
-[assembly: AssemblyProduct("GTAVPlugin")]
+[assembly: AssemblyProduct("GTA5CodemastersTelemetryPlugin")]
 [assembly: AssemblyCopyright("Copyright ©  2017 Carlo Iovino")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -32,5 +32,5 @@ using System.Runtime.InteropServices;
 // È possibile specificare tutti i valori oppure impostare valori predefiniti per i numeri relativi alla revisione e alla build
 // usando l'asterisco '*' come illustrato di seguito:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("0.0.0.1")]
-[assembly: AssemblyFileVersion("0.0.0.1")]
+[assembly: AssemblyVersion("0.0.1.1")]
+[assembly: AssemblyFileVersion("0.0.1.1")]

@@ -1,30 +1,31 @@
 ﻿using System;
 using GTA;
-using CodemastersReader;
+using CodemastersTelemetry;
 
 /// <summary>
-/// GTA V Simhub Plugin
+/// GTA V Codemasters Telemetru Plugin
+/// 
+/// This plugin enables GTA 5 to send telemetry data packets just like a Codemasters game (e.g. DiRT Rally) can do
+/// Now you can use any Codemasters-compatible simracing dashboard with GTA5!
 /// 
 /// If this code works, it has been written by Carlo Iovino (carlo.iovino@outlook.com)
-/// The Green Dragon Youtube Channel (www.youtube.com/carloxofficial
+/// The Green Dragon Youtube Channel (www.youtube.com/carloxofficial)
 /// 
 /// </summary>
 namespace GTAVSimhub.Plugin
 {
-    class GTAVSimHubClient : Script
+    class GTA5TelemetryPlugin : Script
     {
         TelemetryWriter dataWriter;
         TelemetryPacket data = new TelemetryPacket();
 
-        public GTAVSimHubClient()
+        public GTA5TelemetryPlugin()
         {
             int port = 20777;
           
             this.dataWriter = new TelemetryWriter(port);
 
-            Tick += OnTick; // Add OnTick as an event handler for the Tick event
-            //Interval = 15;  // Set the update interval            
-            //ScriptSettings.load(fileName)
+            Tick += OnTick; // Add OnTick as an event handler for the Tick event            
         }
 
         override protected void Dispose(bool disposing)
@@ -40,10 +41,8 @@ namespace GTAVSimhub.Plugin
             {
                 // Player in vehicle
                 Vehicle vehicle = player.CurrentVehicle;
-                
                 data.Speed = vehicle.Speed;
                 data.EngineRevs = vehicle.CurrentRPM;
-
 
                 if (vehicle.CurrentGear == 0) {
                     data.Gear = 10;
@@ -57,17 +56,18 @@ namespace GTAVSimhub.Plugin
                     data.Gear = 0;
                 }
 
-                data.Lap = vehicle.CurrentGear;               
+                data.Steer = vehicle.SteeringScale;
+                data.Throttle = vehicle.Acceleration;                
                 data.MaxRpm = 1;
                 data.IdleRpm = 0.2f;
-                data.FuelRemaining = vehicle.FuelLevel;
+                data.FuelRemaining = vehicle.FuelLevel;                
             }
             else
             {
                 // Player on foot
                 data.Speed = player.Health;
-                data.EngineRevs = player.IsShooting ? 1 : 0;
-                data.Gear = 1;
+                data.Gear = Game.Player.WantedLevel;
+                data.EngineRevs = player.Armor / Game.Player.MaxArmor;
             }
 
             // Share data

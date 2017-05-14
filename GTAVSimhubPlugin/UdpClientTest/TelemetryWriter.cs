@@ -11,7 +11,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace GTAVSimhub.Plugin
+namespace GTA5CodemastersTelemetryPlugin
 {
     sealed class TelemetryWriter : IDisposable
     {
