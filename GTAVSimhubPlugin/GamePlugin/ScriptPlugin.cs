@@ -45,7 +45,7 @@ namespace GTAVSimhub.Plugin
                 data.EngineRevs = vehicle.CurrentRPM;
 
 
-                if (vehicle.CurrentGear == 0 ? 10) {
+                if (vehicle.CurrentGear == 0) {
                     data.Gear = 10;
                 }
                 else if (vehicle.CurrentGear > 0)
