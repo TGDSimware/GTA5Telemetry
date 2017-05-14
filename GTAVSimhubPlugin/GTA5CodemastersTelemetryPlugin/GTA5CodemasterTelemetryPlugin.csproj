@@ -73,5 +73,23 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TelemetryPacket.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="bin\Debug\GTAVPlugin.dll" />
+    <Content Include="bin\Debug\GTAVPlugin.pdb" />
+    <Content Include="bin\Debug\GTAVSimhubPlugin.dll" />
+    <Content Include="bin\Debug\GTAVSimhubPlugin.pdb" />
+    <Content Include="bin\Debug\ScriptHookVDotNet.dll" />
+    <Content Include="bin\Debug\ScriptHookVDotNet.xml" />
+    <Content Include="bin\Debug\SharedMemory.dll" />
+    <Content Include="bin\Debug\SharedMemory.xml" />
+    <Content Include="bin\x64\Release\GTA5CodemastersTelemetryPlugin.dll" />
+    <Content Include="bin\x64\Release\GTA5CodemastersTelemetryPlugin.pdb" />
+    <Content Include="bin\x64\Release\ScriptHookVDotNet.dll" />
+    <Content Include="bin\x64\Release\ScriptHookVDotNet.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="bin\Release\" />
+    <Folder Include="bin\x64\Debug\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
