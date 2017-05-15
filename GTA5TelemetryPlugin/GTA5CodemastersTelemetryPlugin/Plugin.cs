@@ -21,6 +21,8 @@ namespace GTA5Telemetry
         TelemetryPacket data = new TelemetryPacket();
         int previousGear = 0;
         bool doSequentialFix = false;
+        bool doNeutralGearInference = true;
+
         float idleSpeedKMH = 3f;        // A minimum speed (in KMH) for inferring the car is on Neutral gear
         float highRPMs = .2f;           // A minimum rpms value for inferring the car is on Neutral gear
 
@@ -32,10 +34,10 @@ namespace GTA5Telemetry
             try
             {
                 string param = ConfigurationManager.AppSettings["SequentialFix"].ToString();
-                if (Int32.Parse(param) != 0)
-                {
-                    doSequentialFix = true;
-                }
+                doSequentialFix = Int32.Parse(param) != 0;                
+                param = ConfigurationManager.AppSettings["NeutralGearInference"].ToString();                
+                doNeutralGearInference = doSequentialFix = Int32.Parse(param) != 0;
+                
             }
             catch (Exception e)
             {
@@ -82,7 +84,7 @@ namespace GTA5Telemetry
                     }
                     else
                     {                        
-                        if (vehicle.CurrentGear > 0)
+                        if (vehicle.CurrentGear > 0 && doNeutralGearInference)
                         {
                             // Inference
                             // if the car is going backwards but the current gear is 1 or more
@@ -98,7 +100,11 @@ namespace GTA5Telemetry
                                 vehicle.Speed * 3.9f <= idleSpeedKMH && vehicle.CurrentRPM >= highRPMs)
                             {
                                 data.Gear = 0;
-                            }                            
+                            }
+                            else
+                            {
+                                data.Gear = vehicle.CurrentGear;
+                            }
                         }
                         else
                         {
