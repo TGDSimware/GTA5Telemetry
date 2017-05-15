@@ -21,7 +21,7 @@ namespace GTA5Telemetry
         TelemetryPacket data = new TelemetryPacket();
         int previousGear = 0;
         bool doSequentialFix = false;
-        float idleSpeedKMH = 3f;        // A minimum speed for inferring the car is on Neutral gear
+        float idleSpeedKMH = 3f;        // A minimum speed (in KMH) for inferring the car is on Neutral gear
         float highRPMs = .2f;           // A minimum rpms value for inferring the car is on Neutral gear
 
         public GTA5TelemetryPlugin()
@@ -119,8 +119,10 @@ namespace GTA5Telemetry
             else
             {
                 // Player on foot
-                data.Speed = player.Health;
+                // We convert the player health in a "car-like" scale, from 0 to 200
+                data.Speed = (player.Health/359f)*200f;
                 data.Gear = Game.Player.WantedLevel;
+                // We convert the armor value in a "0-1" scale
                 data.EngineRevs = player.Armor / Game.Player.MaxArmor;
             }
 
