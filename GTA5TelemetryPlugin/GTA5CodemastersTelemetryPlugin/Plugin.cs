@@ -63,7 +63,7 @@ namespace GTA5Telemetry
             {
                 // Player in vehicle
                 Vehicle vehicle = player.CurrentVehicle;
-                previousGear = vehicle.CurrentGear;
+                
                 data.Speed = vehicle.Speed;
                 data.EngineRevs = vehicle.CurrentRPM;
 
@@ -122,6 +122,7 @@ namespace GTA5Telemetry
                 data.MaxRpm = 1;
                 data.IdleRpm = 0.2f;
                 data.FuelRemaining = vehicle.FuelLevel;
+                previousGear = vehicle.CurrentGear;
             }
             else
             {
