@@ -19,17 +19,15 @@ namespace GTA5Telemetry
     {
         TelemetryWriter dataWriter;
         TelemetryPacket data = new TelemetryPacket();
-        int previousGear = 0;
+        int previousGear = -1;
         bool doSequentialFix = false;
         bool doNeutralGearInference = true;
         float neutralGearSpeedKMH = 10f; // A minimum speed (in KMH) for inferring the car is on Neutral gear
         float neutralGearIdleRPMs = 0.4f; // A minimum rpms value for inferring the car is on Neutral gear
+        int port = 20777;
 
         public GTA5TelemetryPlugin()
-        {
-            int port = 20777;
-
-            this.dataWriter = new TelemetryWriter(port);
+        {                        
             try
             {
                 string param = ConfigurationManager.AppSettings["SequentialFix"].ToString();
@@ -40,6 +38,8 @@ namespace GTA5Telemetry
                 neutralGearSpeedKMH = Single.Parse((param));
                 param = ConfigurationManager.AppSettings["NeutralGearIdleRPMs"].ToString();
                 neutralGearIdleRPMs = Single.Parse(param) / 100f;
+                param = ConfigurationManager.AppSettings["Port"].ToString();
+                port = Int32.Parse(param);
 
             }
             catch (Exception e)
@@ -47,6 +47,7 @@ namespace GTA5Telemetry
 
             }
 
+            this.dataWriter = new TelemetryWriter(port);
             Tick += OnTick; // Add OnTick() as an event handler for the Tick event            
         }
 
@@ -86,14 +87,7 @@ namespace GTA5Telemetry
                         }
                     }
                     if (doNeutralGearInference)
-                    {
-                        // Inference
-                        // if the car is going backwards but the current gear is 1 or more
-                        // it is very likely that the Gear is N :)
-                        if (vehicle.Acceleration < 0)
-                        {
-                            data.Gear = 0;
-                        }
+                    {                       
                         // Inference
                         // When te speed is very low, but the Engine RPMs are high
                         // it is very likely that the Gear is N (or the clutch is down)
