@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26430.4
+VisualStudioVersion = 15.0.26403.7
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharedMemoryClient", "SharedMemoryClient\SharedMemoryClient.csproj", "{FE6EAAD5-A00F-43AD-982A-7B6A36E70010}"
 EndProject
@@ -13,7 +13,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UdpClientTest", "UdpClientT
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimhubDataPlugin", "SImhubDataPlugin\SimhubDataPlugin.csproj", "{FDA295A3-0822-4B9F-B37A-89CAA98B2D84}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GTA5CodemasterTelemetryPlugin", "GTA5CodemastersTelemetryPlugin\GTA5CodemasterTelemetryPlugin.csproj", "{F9B5EF01-8C96-4B49-8EDD-475D0F45D441}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GTA5CodemastersTelemetryPlugin", "GTA5CodemastersTelemetryPlugin\GTA5CodemastersTelemetryPlugin.csproj", "{F9B5EF01-8C96-4B49-8EDD-475D0F45D441}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
