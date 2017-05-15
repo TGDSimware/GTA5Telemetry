@@ -22,9 +22,8 @@ namespace GTA5Telemetry
         int previousGear = 0;
         bool doSequentialFix = false;
         bool doNeutralGearInference = true;
-
-        float idleSpeedKMH = 3f;        // A minimum speed (in KMH) for inferring the car is on Neutral gear
-        float highRPMs = .2f;           // A minimum rpms value for inferring the car is on Neutral gear
+        float neutralGearSpeedKMH = 10f; // A minimum speed (in KMH) for inferring the car is on Neutral gear
+        float neutralGearIdleRPMs = 0.4f; // A minimum rpms value for inferring the car is on Neutral gear
 
         public GTA5TelemetryPlugin()
         {
@@ -34,10 +33,14 @@ namespace GTA5Telemetry
             try
             {
                 string param = ConfigurationManager.AppSettings["SequentialFix"].ToString();
-                doSequentialFix = Int32.Parse(param) != 0;                
-                param = ConfigurationManager.AppSettings["NeutralGearInference"].ToString();                
-                doNeutralGearInference = doSequentialFix = Int32.Parse(param) != 0;
-                
+                doSequentialFix = Int32.Parse(param) != 0;
+                param = ConfigurationManager.AppSettings["NeutralGearInference"].ToString();
+                doNeutralGearInference = Int32.Parse(param) != 0;
+                param = ConfigurationManager.AppSettings["NeutralGearSpeedKMH"].ToString();
+                neutralGearSpeedKMH = Single.Parse((param));
+                param = ConfigurationManager.AppSettings["NeutralGearIdleRPMs"].ToString();
+                neutralGearIdleRPMs = Single.Parse(param) / 100;
+
             }
             catch (Exception e)
             {
@@ -69,11 +72,11 @@ namespace GTA5Telemetry
                     // Reverse gear is the number 10 in the Codemasters F1 implementation
                     data.Gear = 10;
                 }
-                else if (vehicle.CurrentGear > 0)
+                else if (vehicle.CurrentGear == 1)
                 {
                     if (doSequentialFix)
                     {
-                        if (previousGear == 0 && vehicle.CurrentGear == 1)
+                        if (previousGear == 0)
                         {
                             // SEQUENTIAL FIX
                             // effectiveGear == 0 means 'R', shifting up means 'N'
@@ -82,35 +85,32 @@ namespace GTA5Telemetry
                             data.Gear = 0;
                         }
                     }
-                    else
-                    {                        
-                        if (vehicle.CurrentGear > 0 && doNeutralGearInference)
+                    if (doNeutralGearInference)
+                    {
+                        // Inference
+                        // if the car is going backwards but the current gear is 1 or more
+                        // it is very likely that the Gear is N :)
+                        if (vehicle.Acceleration < 0)
                         {
-                            // Inference
-                            // if the car is going backwards but the current gear is 1 or more
-                            // it is very likely that the Gear is N :)
-                            if (vehicle.Speed < 0)
-                            {
-                                data.Gear = 0;
-                            }
-                            // Inference
-                            // When te speed is very low, but the Engine RPMs are high
-                            // it is very likely that the Gear is N (or the clutch is down)
-                            else if (vehicle.CurrentGear == 1 &&
-                                vehicle.Speed * 3.9f <= idleSpeedKMH && vehicle.CurrentRPM >= highRPMs)
-                            {
-                                data.Gear = 0;
-                            }
-                            else
-                            {
-                                data.Gear = vehicle.CurrentGear;
-                            }
+                            data.Gear = 0;
+                        }
+                        // Inference
+                        // When te speed is very low, but the Engine RPMs are high
+                        // it is very likely that the Gear is N (or the clutch is down)
+                        else if (vehicle.Speed * 3.9f <= neutralGearSpeedKMH && vehicle.CurrentRPM >= neutralGearIdleRPMs)
+                        {
+                            data.Gear = 0;
                         }
                         else
                         {
                             data.Gear = vehicle.CurrentGear;
                         }
                     }
+                    else
+                    {
+                        data.Gear = vehicle.CurrentGear;
+                    }
+
                 }
                 else
                 {
@@ -127,7 +127,7 @@ namespace GTA5Telemetry
             {
                 // Player on foot
                 // We convert the player health in a "car-like" scale, from 0 to 200
-                data.Speed = (player.Health/359f)*200f;
+                data.Speed = (player.Health / 359f) * 200f;
                 data.Gear = Game.Player.WantedLevel;
                 // We convert the armor value in a "0-1" scale
                 data.EngineRevs = player.Armor / Game.Player.MaxArmor;
