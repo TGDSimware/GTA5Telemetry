@@ -21,9 +21,10 @@ namespace GTA5Telemetry
         TelemetryPacket data = new TelemetryPacket();
         int previousGear = -1;
         bool doSequentialFix = false;
-        bool doNeutralGearInference = true;
+        bool doNeutralGearInference1 = true;
+        bool doNeutralGearInference2 = false;
         float neutralGearSpeedKMH = 10f; // A minimum speed (in KMH) for inferring the car is on Neutral gear
-        float neutralGearIdleRPMs = 0.4f; // A minimum rpms value for inferring the car is on Neutral gear
+        float neutralGearIdleRPMs = 0.5f; // A minimum rpms value for inferring the car is on Neutral gear
         int port = 20777;
 
         public GTA5TelemetryPlugin()
@@ -32,20 +33,40 @@ namespace GTA5Telemetry
             {
                 string param = ConfigurationManager.AppSettings["SequentialFix"].ToString();
                 doSequentialFix = Int32.Parse(param) != 0;
-                param = ConfigurationManager.AppSettings["NeutralGearInference"].ToString();
-                doNeutralGearInference = Int32.Parse(param) != 0;
-                param = ConfigurationManager.AppSettings["NeutralGearSpeedKMH"].ToString();
-                neutralGearSpeedKMH = Single.Parse((param));
-                param = ConfigurationManager.AppSettings["NeutralGearIdleRPMs"].ToString();
-                neutralGearIdleRPMs = Single.Parse(param) / 100f;
-                param = ConfigurationManager.AppSettings["Port"].ToString();
-                port = Int32.Parse(param);
-
             }
-            catch (Exception e)
+            catch (Exception e) { }
+            try
             {
-
+                string param = ConfigurationManager.AppSettings["NeutralGearInference1"].ToString();
+                doNeutralGearInference1 = Int32.Parse(param) != 0;
             }
+            catch (Exception e) { }
+            try
+            {
+                string param = ConfigurationManager.AppSettings["NeutralGearInference2"].ToString();
+                doNeutralGearInference2 = Int32.Parse(param) != 0;
+            }
+            catch (Exception e) { }
+            try
+            {
+                string param = ConfigurationManager.AppSettings["NeutralGearSpeedKMH"].ToString();
+                neutralGearSpeedKMH = Single.Parse((param));
+            }
+            catch (Exception e) { }
+            try
+            {
+                string param = ConfigurationManager.AppSettings["NeutralGearIdleRPMs"].ToString();
+                neutralGearIdleRPMs = Single.Parse(param) / 100f;
+            }
+            catch (Exception e) { }
+            try
+            {
+                string param = ConfigurationManager.AppSettings["Port"].ToString();
+                port = Int32.Parse(param);
+            }
+            catch (Exception e) { }
+
+
 
             this.dataWriter = new TelemetryWriter(port);
             Tick += OnTick; // Add OnTick() as an event handler for the Tick event            
@@ -68,6 +89,8 @@ namespace GTA5Telemetry
                 data.Speed = vehicle.Speed;
                 data.EngineRevs = vehicle.CurrentRPM;
 
+                data.Gear = vehicle.CurrentGear;    // unless Neutral inference
+
                 if (vehicle.CurrentGear == 0)
                 {
                     // Reverse gear is the number 10 in the Codemasters F1 implementation
@@ -86,29 +109,30 @@ namespace GTA5Telemetry
                             data.Gear = 0;
                         }
                     }
-                    if (doNeutralGearInference)
-                    {                       
-                        // Inference
+                    if (doNeutralGearInference1)
+                    {
+                        // Inference 1
                         // When te speed is very low, but the Engine RPMs are high
                         // it is very likely that the Gear is N (or the clutch is down)
                         if (vehicle.Speed * 3.9f <= neutralGearSpeedKMH && vehicle.CurrentRPM >= neutralGearIdleRPMs)
                         {
                             data.Gear = 0;
                         }
-                        else
+                        // Inference 2
+                        // When te speed is very low, but the Engine RPMs are high
+                        // it is very likely that the Gear is N (or the clutch is down)
+                        if (doNeutralGearInference2)
                         {
-                            data.Gear = vehicle.CurrentGear;
+                            if (vehicle.Acceleration < 0 && vehicle.CurrentRPM >= neutralGearIdleRPMs)
+                            {
+                                // Inference 3 (to be tested)
+                                // Acceleration negative but RPM high
+                                // it is very likely that the Gear is N (or the clutch is down)
+                                data.Gear = 0;
+                            }
                         }
                     }
-                    else
-                    {
-                        data.Gear = vehicle.CurrentGear;
-                    }
-                }
-                else
-                {
-                    data.Gear = 0;
-                }
+                }            
 
                 data.Steer = vehicle.SteeringScale;
                 data.Throttle = vehicle.Acceleration;
