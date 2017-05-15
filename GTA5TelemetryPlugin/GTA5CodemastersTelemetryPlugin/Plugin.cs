@@ -39,7 +39,7 @@ namespace GTA5Telemetry
                 param = ConfigurationManager.AppSettings["NeutralGearSpeedKMH"].ToString();
                 neutralGearSpeedKMH = Single.Parse((param));
                 param = ConfigurationManager.AppSettings["NeutralGearIdleRPMs"].ToString();
-                neutralGearIdleRPMs = Single.Parse(param) / 100;
+                neutralGearIdleRPMs = Single.Parse(param) / 100f;
 
             }
             catch (Exception e)
