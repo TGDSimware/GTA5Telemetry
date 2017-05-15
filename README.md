@@ -1,6 +1,6 @@
 Link to the Mod: https://github.com/TGD-Simracing/GTA5Telemetry
 
-THIS MOD
+- THIS MOD
 
 This mod make GTA5 behave as a Codemaster Game, sending telemetry data in the same format as the F1 series.
 This makes it compatible with any dashboard that supports Codemasters game.
@@ -8,7 +8,7 @@ It has been tested with Simhub and my Arduino Dashboard.
 
 This software is DONATIONWARE. if you find it useful please support my work by doing a free Paypal donation to carloxbox360@live.it.
 
-INSTALLATION INSTRUCTIONS 
+- INSTALLATION INSTRUCTIONS 
 
 
 1. Download and install OpenIV 
