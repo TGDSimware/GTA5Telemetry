@@ -11,7 +11,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 /// <summary>
-/// GTA V Codemasters Telemetru Plugin
+/// GTA V Codemasters Telemetry Plugin
 /// 
 /// This plugin enables GTA 5 to send telemetry data packets just like a Codemasters game (e.g. DiRT Rally) can do
 /// Now you can use any Codemasters-compatible simracing dashboard with GTA5!

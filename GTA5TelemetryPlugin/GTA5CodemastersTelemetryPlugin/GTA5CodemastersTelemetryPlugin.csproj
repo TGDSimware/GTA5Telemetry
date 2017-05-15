@@ -56,6 +56,7 @@
       <HintPath>..\..\..\..\..\Desktop\SDK\ScriptHookVDotNet.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
@@ -69,7 +70,7 @@
   <ItemGroup>
     <Compile Include="TelemetryWriter.cs" />
     <Compile Include="PacketUtilities.cs" />
-    <Compile Include="ScriptPlugin.cs" />
+    <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TelemetryPacket.cs" />
   </ItemGroup>
@@ -90,6 +91,11 @@
   <ItemGroup>
     <Folder Include="bin\Release\" />
     <Folder Include="bin\x64\Debug\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="GTA5CodemastersTelemetryPlugin.dll.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
