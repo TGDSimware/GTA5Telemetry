@@ -81,7 +81,7 @@ namespace GTA5Telemetry
                         }
                     }
                     else
-                    {
+                    {                        
                         if (vehicle.CurrentGear > 0)
                         {
                             // Inference
@@ -94,7 +94,8 @@ namespace GTA5Telemetry
                             // Inference
                             // When te speed is very low, but the Engine RPMs are high
                             // it is very likely that the Gear is N (or the clutch is down)
-                            else if (vehicle.Speed * 3.9f <= idleSpeedKMH && vehicle.CurrentRPM >= highRPMs)
+                            else if (vehicle.CurrentGear == 1 &&
+                                vehicle.Speed * 3.9f <= idleSpeedKMH && vehicle.CurrentRPM >= highRPMs)
                             {
                                 data.Gear = 0;
                             }                            
