@@ -46,11 +46,11 @@ http://www.gtainside.com/en/gta5/mods/73141-extreme-realistic-speed-and-handling
 
 or
 
-Download and install Realistic Driving V v2.2 
+Realistic Driving V v2.2 
 
 Download from: https://www.gta5-mods.com/vehicles/realistic-driving-v
 
-(choose the one you like most)
+(choose the one you like more)
 
 Don't hesitate to contact me for any problem!
 carloxbox360@live.it
