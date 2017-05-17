@@ -38,7 +38,7 @@ Download from: https://it.gta5-mods.com/tools/scripthookv-net
 
 While not mandatory, I recommend to use my mod in conjunction with the following ones
 
-- Manual Transmission & Steering Wheel Support v4.3.1 
+- <b>Manual Transmission & Steering Wheel Support v4.3.1</b>
 
 Download from: https://www.gta5-mods.com/scripts/manual-transmission-ikt
 (The release file also include the configuration files I use for the Manual Trasmission Mod, the one I use for my Logitech G27 setup.
