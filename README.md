@@ -5,13 +5,13 @@ Link to the Mod: https://github.com/TGD-Simracing/GTA5Telemetry
 This mod make GTA5 behave as a Codemaster Game, sending telemetry data in the same format as the F1 series.
 This makes it compatible with any dashboard that supports Codemasters game.
 It has been tested with Simhub and my Arduino Dashboard.
+For a demo look at https://youtu.be/sjN-2OWxql8
 
 This software is DONATIONWARE. if you find it useful please support my work by doing a free Paypal donation to carloxbox360@live.it.
 
 RELEASE NOTES
 =============
-The 0.3Beta version has been integrated with the Natural Transmission Mod, so it can display the Neutral Gear correctly:
-For a demo look at https://youtu.be/sjN-2OWxql8
+The 0.3Beta version has been integrated with the Natural Transmission Mod, so it can display the Neutral Gear correctly.
 
 - INSTALLATION INSTRUCTIONS 
 
