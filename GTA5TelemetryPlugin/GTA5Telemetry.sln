@@ -1,15 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26403.7
+VisualStudioVersion = 15.0.26430.6
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharedMemoryClient", "SharedMemoryClient\SharedMemoryClient.csproj", "{FE6EAAD5-A00F-43AD-982A-7B6A36E70010}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharedMemoryServer", "SharedMemoryServer\SharedMemoryServer.csproj", "{80673233-972C-4C22-991F-824ECC0AEBD2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimhubReader", "Reader\SimhubReader.csproj", "{7F51585B-86A2-4866-BADF-55EAA47F4ED4}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UdpClientTest", "UdpClientTest\UdpClientTest.csproj", "{6A81B34A-0AB2-4927-943D-834B85C3BFC2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimhubDataPlugin", "SImhubDataPlugin\SimhubDataPlugin.csproj", "{FDA295A3-0822-4B9F-B37A-89CAA98B2D84}"
 EndProject
@@ -61,18 +59,6 @@ Global
 		{7F51585B-86A2-4866-BADF-55EAA47F4ED4}.Release|x64.Build.0 = Release|Any CPU
 		{7F51585B-86A2-4866-BADF-55EAA47F4ED4}.Release|x86.ActiveCfg = Release|Any CPU
 		{7F51585B-86A2-4866-BADF-55EAA47F4ED4}.Release|x86.Build.0 = Release|Any CPU
-		{6A81B34A-0AB2-4927-943D-834B85C3BFC2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6A81B34A-0AB2-4927-943D-834B85C3BFC2}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6A81B34A-0AB2-4927-943D-834B85C3BFC2}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{6A81B34A-0AB2-4927-943D-834B85C3BFC2}.Debug|x64.Build.0 = Debug|Any CPU
-		{6A81B34A-0AB2-4927-943D-834B85C3BFC2}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{6A81B34A-0AB2-4927-943D-834B85C3BFC2}.Debug|x86.Build.0 = Debug|Any CPU
-		{6A81B34A-0AB2-4927-943D-834B85C3BFC2}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6A81B34A-0AB2-4927-943D-834B85C3BFC2}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6A81B34A-0AB2-4927-943D-834B85C3BFC2}.Release|x64.ActiveCfg = Release|Any CPU
-		{6A81B34A-0AB2-4927-943D-834B85C3BFC2}.Release|x64.Build.0 = Release|Any CPU
-		{6A81B34A-0AB2-4927-943D-834B85C3BFC2}.Release|x86.ActiveCfg = Release|Any CPU
-		{6A81B34A-0AB2-4927-943D-834B85C3BFC2}.Release|x86.Build.0 = Release|Any CPU
 		{FDA295A3-0822-4B9F-B37A-89CAA98B2D84}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{FDA295A3-0822-4B9F-B37A-89CAA98B2D84}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FDA295A3-0822-4B9F-B37A-89CAA98B2D84}.Debug|x64.ActiveCfg = Debug|Any CPU

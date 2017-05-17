@@ -21,52 +21,58 @@ namespace GTA5Telemetry
         TelemetryPacket data = new TelemetryPacket();
         int previousGear = -1;
         bool doSequentialFix = false;
-        bool doNeutralGearInference1 = true;
+        bool doNeutralGearInference1 = false;
         bool doNeutralGearInference2 = false;
+        bool doManualTransmissionGearing = true;
+
         float neutralGearSpeedKMH = 10f; // A minimum speed (in KMH) for inferring the car is on Neutral gear
         float neutralGearIdleRPMs = 0.5f; // A minimum rpms value for inferring the car is on Neutral gear
         int port = 20777;
 
         public GTA5TelemetryPlugin()
-        {                        
+        {
+            try
+            {
+                string param = ConfigurationManager.AppSettings["ManualTransmissionGearing"].ToString();
+                doManualTransmissionGearing = Int32.Parse(param) != 0;
+            }
+            catch { }            
             try
             {
                 string param = ConfigurationManager.AppSettings["SequentialFix"].ToString();
                 doSequentialFix = Int32.Parse(param) != 0;
             }
-            catch (Exception e) { }
+            catch { }
             try
             {
                 string param = ConfigurationManager.AppSettings["NeutralGearInference1"].ToString();
                 doNeutralGearInference1 = Int32.Parse(param) != 0;
             }
-            catch (Exception e) { }
+            catch { }
             try
             {
                 string param = ConfigurationManager.AppSettings["NeutralGearInference2"].ToString();
                 doNeutralGearInference2 = Int32.Parse(param) != 0;
             }
-            catch (Exception e) { }
+            catch { }
             try
             {
                 string param = ConfigurationManager.AppSettings["NeutralGearSpeedKMH"].ToString();
                 neutralGearSpeedKMH = Single.Parse((param));
             }
-            catch (Exception e) { }
+            catch { }
             try
             {
                 string param = ConfigurationManager.AppSettings["NeutralGearIdleRPMs"].ToString();
                 neutralGearIdleRPMs = Single.Parse(param) / 100f;
             }
-            catch (Exception e) { }
+            catch { }
             try
             {
                 string param = ConfigurationManager.AppSettings["Port"].ToString();
                 port = Int32.Parse(param);
             }
-            catch (Exception e) { }
-
-
+            catch { }
 
             this.dataWriter = new TelemetryWriter(port);
             Tick += OnTick; // Add OnTick() as an event handler for the Tick event            
@@ -85,13 +91,35 @@ namespace GTA5Telemetry
             {
                 // Player in vehicle
                 Vehicle vehicle = player.CurrentVehicle;
-                
+
                 data.Speed = vehicle.Speed;
                 data.EngineRevs = vehicle.CurrentRPM;
+                Boolean manualTransmissionNeutral = false;
 
-                data.Gear = vehicle.CurrentGear;    // unless Neutral inference
+                data.Gear = vehicle.CurrentGear;    // unless Neutral inference or Manual Transission Gearing
 
-                if (vehicle.CurrentGear == 0)
+                if (doManualTransmissionGearing)
+                {
+                    try
+                    {
+                        // This is a cross-script communication with the Manual Transmission mod
+                        // for capturing the simulated Neutral gear
+
+                        GTA.Native.InputArgument[] args = {
+                        new GTA.Native.InputArgument(vehicle), "hunt_weapon"};
+
+                        manualTransmissionNeutral =
+                            Convert.ToBoolean(
+                                GTA.Native.Function.Call<Int32>(GTA.Native.Hash.DECOR_GET_INT, args)); // cross-script                 
+                    }
+                    catch { }
+                }
+
+                if (manualTransmissionNeutral)
+                {
+                    data.Gear = 0;
+                }
+                else if (vehicle.CurrentGear == 0)
                 {
                     // Reverse gear is the number 10 in the Codemasters F1 implementation
                     data.Gear = 10;
@@ -132,7 +160,7 @@ namespace GTA5Telemetry
                             }
                         }
                     }
-                }            
+                }
 
                 data.Steer = vehicle.SteeringScale;
                 data.Throttle = vehicle.Acceleration;
