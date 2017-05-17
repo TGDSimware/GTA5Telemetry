@@ -1,16 +1,20 @@
-Link to the Mod: https://github.com/TGD-Simracing/GTA5Telemetry
+- Link to the Mod: https://github.com/TGD-Simracing/GTA5Telemetry
+- Demo (Release 0.2Beta): https://www.youtube.com/embed/sjN-2OWxql8
 
-- THIS MOD
-
+THIS MOD
+========
 This mod make GTA5 behave as a Codemaster Game, sending telemetry data in the same format as the F1 series.
 This makes it compatible with any dashboard that supports Codemasters game.
 It has been tested with Simhub and my Arduino Dashboard.
 
-This software is DONATIONWARE. if you find it useful please support my work by doing a free Paypal donation to carloxbox360@live.it.
+<b>This software is DONATIONWARE. if you find it useful please support my work by doing a free Paypal donation to carloxbox360@live.it</b>
 
-- INSTALLATION INSTRUCTIONS 
+RELEASE NOTES
+=============
+The 0.3Beta version has been integrated with the Natural Transmission Mod, so it can display the Neutral Gear correctly.
 
-
+INSTALLATION INSTRUCTIONS 
+=========================
 1. Download and install OpenIV 
 
 OpenIV is a modding tool that support recent Rockstar games.
@@ -34,26 +38,26 @@ Download from: https://it.gta5-mods.com/tools/scripthookv-net
 
 While not mandatory, I recommend to use my mod in conjunction with the following ones
 
-Download and install Manual Transmission & Steering Wheel Support v4.3.1 
+- Manual Transmission & Steering Wheel Support v4.3.1 
 
 Download from: https://www.gta5-mods.com/scripts/manual-transmission-ikt
 (The release file also include the configuration files I use for the Manual Trasmission Mod, the one I use for my Logitech G27 setup.
 Run the "WheelConfigurator.exe" utility to change the setting)
 
-Extreme Realistic Speed and Handling VFINAL
+- <b>Extreme Realistic Speed and Handling VFINAL</b>
 
-http://www.gtainside.com/en/gta5/mods/73141-extreme-realistic-speed-and-handling-vfinal/
+Download from: http://www.gtainside.com/en/gta5/mods/73141-extreme-realistic-speed-and-handling-vfinal/
 
 or
 
-Realistic Driving V v2.2 
+- <b>Realistic Driving V v2.2</b>
 
 Download from: https://www.gta5-mods.com/vehicles/realistic-driving-v
 
 (choose the one you like more)
 
 Don't hesitate to contact me for any problem!
-carloxbox360@live.it
+carloxbox360@live.it or carlo.iovino@outlook.com
 
 
 
