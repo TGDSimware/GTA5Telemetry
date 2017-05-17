@@ -1,7 +1,7 @@
 Link to the Mod: https://github.com/TGD-Simracing/GTA5Telemetry
 
-- THIS MOD
-
+THIS MOD
+========
 This mod make GTA5 behave as a Codemaster Game, sending telemetry data in the same format as the F1 series.
 This makes it compatible with any dashboard that supports Codemasters game.
 It has been tested with Simhub and my Arduino Dashboard.
@@ -13,8 +13,8 @@ RELEASE NOTES
 =============
 The 0.3Beta version has been integrated with the Natural Transmission Mod, so it can display the Neutral Gear correctly.
 
-- INSTALLATION INSTRUCTIONS 
-
+INSTALLATION INSTRUCTIONS 
+=========================
 1. Download and install OpenIV 
 
 OpenIV is a modding tool that support recent Rockstar games.
