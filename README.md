@@ -28,7 +28,7 @@ Download from: https://www.gta5-mods.com/tools/script-hook-v
 
 4. Download and install Community Script Hook V .NET 2.9.6
 
-Download from: https://github.com/crosire/scripthookvdotnet/releases
+Download from: https://github.com/crosire/scripthookvdotnet/releases<br>
 Download from: https://it.gta5-mods.com/tools/scripthookv-net
 
 5. Create a "script" folder in your GTA5 installation root folder and copy there the files in the .zip archive
