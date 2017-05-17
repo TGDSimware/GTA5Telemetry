@@ -8,8 +8,12 @@ It has been tested with Simhub and my Arduino Dashboard.
 
 This software is DONATIONWARE. if you find it useful please support my work by doing a free Paypal donation to carloxbox360@live.it.
 
-- INSTALLATION INSTRUCTIONS 
+RELEASE NOTES
+=============
+The 0.3Beta version has been integrated with the Natural Transmission Mod, so it can display the Neutral Gear correctly:
+For a demo look at https://youtu.be/sjN-2OWxql8
 
+- INSTALLATION INSTRUCTIONS 
 
 1. Download and install OpenIV 
 
