@@ -5,9 +5,10 @@ THIS MOD
 This mod make GTA5 behave as a Codemaster Game, sending telemetry data in the same format as the F1 series.
 This makes it compatible with any dashboard that supports Codemasters game.
 It has been tested with Simhub and my Arduino Dashboard.
-For a demo look at https://youtu.be/sjN-2OWxql8
 
-This software is DONATIONWARE. if you find it useful please support my work by doing a free Paypal donation to carloxbox360@live.it.
+<iframe width="854" height="480" src="https://www.youtube.com/embed/sjN-2OWxql8" frameborder="0" allowfullscreen></iframe>
+
+<b>This software is DONATIONWARE. if you find it useful please support my work by doing a free Paypal donation to carloxbox360@live.it</b>
 
 RELEASE NOTES
 =============
@@ -38,19 +39,19 @@ Download from: https://it.gta5-mods.com/tools/scripthookv-net
 
 While not mandatory, I recommend to use my mod in conjunction with the following ones
 
-Download and install Manual Transmission & Steering Wheel Support v4.3.1 
+- Manual Transmission & Steering Wheel Support v4.3.1 
 
 Download from: https://www.gta5-mods.com/scripts/manual-transmission-ikt
 (The release file also include the configuration files I use for the Manual Trasmission Mod, the one I use for my Logitech G27 setup.
 Run the "WheelConfigurator.exe" utility to change the setting)
 
-Extreme Realistic Speed and Handling VFINAL
+- <b>Extreme Realistic Speed and Handling VFINAL</b>
 
-http://www.gtainside.com/en/gta5/mods/73141-extreme-realistic-speed-and-handling-vfinal/
+Download from: http://www.gtainside.com/en/gta5/mods/73141-extreme-realistic-speed-and-handling-vfinal/
 
 or
 
-Realistic Driving V v2.2 
+- <b>Realistic Driving V v2.2</b>
 
 Download from: https://www.gta5-mods.com/vehicles/realistic-driving-v
 
