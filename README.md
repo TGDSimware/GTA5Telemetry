@@ -1,5 +1,5 @@
-Link to the Mod: https://github.com/TGD-Simracing/GTA5Telemetry
-Demo (Release 0.2Beta): https://www.youtube.com/embed/sjN-2OWxql8
+- Link to the Mod: https://github.com/TGD-Simracing/GTA5Telemetry
+- Demo (Release 0.2Beta): https://www.youtube.com/embed/sjN-2OWxql8
 
 THIS MOD
 ========
