@@ -2,6 +2,8 @@
 using System.Configuration;
 using GTA;
 using CodemastersTelemetry;
+using GTA.Native;
+using GTA.Math;
 
 /// <summary>
 /// GTA V Codemasters Telemetry Plugin
@@ -39,49 +41,49 @@ namespace GTA5Telemetry
         {
             try
             {
-                string param = ConfigurationManager.AppSettings["WaypointsNavigation"].ToString();
+                string param = ConfigurationManager.AppSettings["WaypointsNavigation"];
                 Settings.WaypointsNavigation = Int32.Parse(param) != 0;
             }
             catch { }
             try
             {
-                string param = ConfigurationManager.AppSettings["ManualTransmissionGearing"].ToString();
+                string param = ConfigurationManager.AppSettings["ManualTransmissionGearing"];
                 Settings.CaptureManualTransmissionGearing = Int32.Parse(param) != 0;
             }
             catch { }
             try
             {
-                string param = ConfigurationManager.AppSettings["SequentialFix"].ToString();
+                string param = ConfigurationManager.AppSettings["SequentialFix"];
                 Settings.SequentialFix = Int32.Parse(param) != 0;
             }
             catch { }
             try
             {
-                string param = ConfigurationManager.AppSettings["NeutralGearInference1"].ToString();
+                string param = ConfigurationManager.AppSettings["NeutralGearInference1"];
                 Settings.NeutralGearInference1 = Int32.Parse(param) != 0;
             }
             catch { }
             try
             {
-                string param = ConfigurationManager.AppSettings["NeutralGearInference2"].ToString();
+                string param = ConfigurationManager.AppSettings["NeutralGearInference2"];
                 Settings.NeutralGearInference2 = Int32.Parse(param) != 0;
             }
             catch { }
             try
             {
-                string param = ConfigurationManager.AppSettings["NeutralGearSpeedKMH"].ToString();
+                string param = ConfigurationManager.AppSettings["NeutralGearSpeedKMH"];
                 Settings.NeutralGearSpeedKMH = Single.Parse((param));
             }
             catch { }
             try
             {
-                string param = ConfigurationManager.AppSettings["NeutralGearIdleRPMs"].ToString();
+                string param = ConfigurationManager.AppSettings["NeutralGearIdleRPMs"];
                 Settings.NeutralGearIdleRPMs = Single.Parse(param) / 100f;
             }
             catch { }
             try
             {
-                string param = ConfigurationManager.AppSettings["Port"].ToString();
+                string param = ConfigurationManager.AppSettings["Port"];
                 Settings.port = Int32.Parse(param);
             }
             catch { }
@@ -119,27 +121,41 @@ namespace GTA5Telemetry
                 Data.MaxRpm = 1;
                 Data.IdleRpm = 0.2f;
                 Data.FuelRemaining = vehicle.FuelLevel;
-                
+
 
                 // Helicopter/Airplane specific
                 if (player.IsInAir || player.IsInHeli)
                 {
                     Data.Steer = vehicle.Rotation.Y;
-                    Data.Distance = vehicle.HeightAboveGround;               
+                    Data.Distance = vehicle.HeightAboveGround;
                 }
                 else
-                {                                        
+                {
                     bool manualTransmissionNeutral = false;
 
                     Data.Gear = vehicle.CurrentGear;    // unless Neutral inference or Manual Transission Gearing
-                    
+
                     if (Settings.WaypointsNavigation)
                     {
                         // Experimental: use waypoint position for navigation
-                        var waypoint = GTA.World.GetWaypointPosition();
-                        var distanceToWaypoint = vehicle.Position.DistanceTo2D(waypoint);
-                        Data.Distance = distanceToWaypoint;
-                        GTA.UI.Notify("Distance to Waypoint: " + distanceToWaypoint);
+
+                        //var blip = vehicle.CurrentBlip;
+                        var task = player.Task;
+
+                        if (Game.IsWaypointActive)
+                        {
+                            //LoadAllPathNodes(true);
+                            var dtc = GenerateDirectionsToCoord(World.GetWaypointPosition());
+                            var disToNextTurn = Convert.ToSingle(dtc.Item3);
+
+                            Data.Distance = disToNextTurn * 0.9144f;    //yards to meters
+                            Data.Speed = disToNextTurn;
+
+                            UI.ShowSubtitle(
+                                "Sign: " +
+                                    dtc.Item1.ToString() + " | Unk: " + dtc.Item2.ToString()
+                                );
+                        }
                     }
 
                     if (Settings.CaptureManualTransmissionGearing)
@@ -218,14 +234,43 @@ namespace GTA5Telemetry
                 Data.Gear = Game.Player.WantedLevel;
                 // We convert the armor value in a "0-1" scale
                 Data.EngineRevs = player.Armor / Game.Player.MaxArmor;
+                Data.FuelRemaining = Convert.ToSingle(player.Money);
                 Data.X = player.Position.X;
                 Data.Y = player.Position.Y;
-                Data.Z = player.Position.Z;                
+                Data.Z = player.Position.Z;
             }
 
             // Share data
             byte[] bytes = PacketUtilities.ConvertPacketToByteArray(Data);
             DataWriter.SendPacket(bytes);
         }
+
+        private static void LoadAllPathNodes(bool load)
+        {
+            GTA.Native.InputArgument[] args = { load };
+            GTA.Native.Function.Call(GTA.Native.Hash.LOAD_ALL_PATH_NODES, args);
+        }
+
+        public static Tuple<string, float, float> GenerateDirectionsToCoord(Vector3 pos)
+        {
+            OutputArgument outputArgument = new OutputArgument();
+            OutputArgument outputArgument2 = new OutputArgument();
+            OutputArgument outputArgument3 = new OutputArgument();
+            GTA.Native.Function.Call(Hash.GENERATE_DIRECTIONS_TO_COORD, new InputArgument[]
+            {
+                pos.X,
+                pos.Y,
+                pos.Z,
+                true,
+                outputArgument,
+                outputArgument2,
+                outputArgument3
+            });
+            string text = Convert.ToString(outputArgument.GetResult<float>());
+            return new Tuple<string, float, float>(text.Substring(0, 1), outputArgument2.GetResult<float>(), outputArgument3.GetResult<float>());
+        }
+
     }
+
+
 }
