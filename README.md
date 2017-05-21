@@ -33,9 +33,6 @@ Download from: https://it.gta5-mods.com/tools/scripthookv-net
 
 5. Create a "script" folder in your GTA5 installation root folder and copy there the files in the .zip archive
 
-- GTA5CodemastersTelemetryPlugin.dll
-- GTA5CodemastersTelemetryPlugin.dll.config
-
 While not mandatory, I recommend to use my mod in conjunction with the following ones
 
 - <b>Manual Transmission & Steering Wheel Support v4.3.1</b>
