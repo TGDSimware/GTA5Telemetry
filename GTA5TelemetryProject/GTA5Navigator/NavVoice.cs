@@ -68,6 +68,6 @@ namespace GTA5Navigator
         public static NavSound[] Voices =
             { In200mTurnL, In150mTurnL, In100mTurnL, NowTurnL, In200mTurnR, In150mTurnR, In100mTurnR, NowTurnR, In200mDest,
         In150mDest, In100mDest, DestRight, DestLeft, Dest, In200mInversion, In150mInversion, In100mInversion, NowInversion,
-        In200mExitR, In150mExitR, In100mExitR, ExitR, In200mExitL, In150mExitL, In100mExitL, ExitL, Keep, Calculating, WrongDirection };
+        In200mExitR, In150mExitR, In100mExitR, ExitR, In200mExitL, In150mExitL, In100mExitL, ExitL, Keep, Calculating, WrongDirection, Follow };
     }
 }

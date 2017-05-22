@@ -9,8 +9,7 @@ NEW FEATURES
 
 KNOW ISSUES
 ===========
-- When arriving at destination, you may not receive a message
-- Too long delay in certain situations
+- Inaccurate in certain situations
 
 THIS MOD
 ========

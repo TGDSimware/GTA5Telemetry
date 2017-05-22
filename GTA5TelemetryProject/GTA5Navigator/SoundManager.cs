@@ -45,8 +45,15 @@ namespace GTA5Navigator
 
         public float Play(string key)
         {
-            var wav = Store[key];
-            return wav.Play();
+            try
+            {
+                var wav = Store[key];
+                return wav.Play();
+            }
+            catch
+            {
+                throw new Exception("SoundManager: key '" + key + "' not found in Store");
+            }
         }
 
         #region IDisposable Support

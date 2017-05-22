@@ -22,16 +22,14 @@ namespace GTA5Navigator
 
     class GPSNavigator : Script
     {
-        float LastHint = -1;
-        float LastHintDistance = -1;
+        float _LastHint = -1;
+        float _LastHintDistance = -1;
         bool DestinationReached;
-        Vector3 CurrentPos;
-        Vector3 LastPos;
-        int TurningL = 0;
-        int TurningR = 0;
-        int ToDest = 0;
-        int Recalc = 0;
+        bool Running = false;
+        Vector3 _CurrentPos;
+        Vector3 _LastPos;
         float dPoint = 20;
+        private int[] _Progress = new int[10];
 
         float LastTurnDistance = 0;
         Vehicle CurrentVehicle = null;
@@ -123,11 +121,17 @@ namespace GTA5Navigator
                         if (!World.GetWaypointPosition().Equals(Destination))
                         {                            
                             this.StartNavigation(vehicle, World.GetWaypointPosition());
+                            Running = true;
                         }
                         else
                         {
                             this.setPosition(vehicle.Position);
                         }
+                    }
+                    else if (Running)
+                    {
+                        AnnounceDestAtSide();
+                        Running = false;
                     }
                 }
             }
@@ -143,10 +147,10 @@ namespace GTA5Navigator
             {
                 LoadSettings();             
                 CurrentVehicle = v;
-                LastPos = v.Position;
+                _LastPos = v.Position;
                 Destination = destination;
-                ToDest = 0;
                 DestinationReached = true;
+                ResetDriving(0);
 
                 // Preloads All Audio
                 _AudioManager.VolumeFactor = VolumeFactor;
@@ -170,7 +174,7 @@ namespace GTA5Navigator
         {
             get
             {
-                return CurrentPos.DistanceTo2D(Destination);
+                return _CurrentPos.DistanceTo2D(Destination);
             }
         }
 
@@ -217,7 +221,7 @@ namespace GTA5Navigator
 
         public void setPosition(Vector3 pos)
         {
-            CurrentPos = pos;
+            _CurrentPos = pos;
             try
             {
                 //Position = value;
@@ -235,96 +239,95 @@ namespace GTA5Navigator
             }
         }
 
-
         private bool InRange(float arg, float min, float max)
         {
             return min <= arg && arg <= max;
         }
 
-        public void Process(float hint, float disToNextTurn, float disToWaypoint)
+        public void Process(float fHint, float disToNextTurn, float disToWaypoint)
         {
             float distance = DistanceRemaining;
-            float delta = Math.Abs(distance - LastHintDistance);
+            float delta = Math.Abs(distance - _LastHintDistance);
+            int hint = (int)fHint;
 
             if (_DEBUG)
             {
                 UI.ShowSubtitle("Hint " + hint + " @ " + disToNextTurn + "m delta = " + delta + "m");
             }
- 
-            switch (hint)
+
+            try
             {
-                case 0:
-                    break;
-                case 1:
-                    ResetDirective();
-                    if (disToNextTurn == 0)
-                    {
-                        Recalc++;
-                        if (Recalc >= 150)
+                if (hint != _LastHint && hint > 0) ResetDriving(hint);
+
+                switch (hint)
+                {
+                    case 0:
+                        break;
+                    case 1:
+                        if (disToNextTurn == 0)
                         {
-                            Announce(NavVoice.WrongDirection);
-                            Recalc = 0;
+                            SetProgress(1, Progress(1) + 1);
+                            if (Progress(1) >= 25)
+                            {
+                                Announce(NavVoice.WrongDirection);
+                                SetProgress(1, 0);
+                            }
                         }
-                    }
-                    else
-                    {
-                        Recalc = 0;
-                        AnnounceInversion(disToNextTurn);
-                    }
-                    break;
-                case 2:
-                    ResetDirective();
-                    if (LastHint != 2) Announce(NavVoice.Keep);
-                    break;
-                case 3:
-                    ResetDirective();
-                    // Never!
-                    break;
-                case 4:
-                    AnnounceTurnL(disToNextTurn);
-                    break;
-                case 5:
-                    AnnounceTurnR(disToNextTurn);
-                    break;
-                case 6:
-                    // Never!
-                    break;
-                case 7:
-                    if (LastHint != 7 && LastHint != 2) Announce(NavVoice.Follow);
-                    ResetDirective();
-                    break;
-                case 8:
-                    /*if (FindHeading() < -.8)
-                        AnnounceInversion(disToNextTurn);
-                    else*/
-                    AnnounceExitLeft(disToNextTurn);
-                    break;
-                case 9:
-                    AnnounceExitRight(disToNextTurn);
-                    break;
+                        else
+                        {
+                            SetProgress(1, 0);
+                            AnnounceInversion(hint, disToNextTurn);
+                        }
+                        break;
+                    case 2:
+                        if (_LastHint != 2) Announce(NavVoice.Keep);
+                        break;
+                    case 3:
+                        // Never!
+                        break;
+                    case 4:
+                        AnnounceTurnL(hint, disToNextTurn);
+                        break;
+                    case 5:
+                        AnnounceTurnR(hint, disToNextTurn);
+                        break;
+                    case 6:
+                        // Never!
+                        break;
+                    case 7:
+                        if (_LastHint != 7 && _LastHint != 2) Announce(NavVoice.Follow);
+                        break;
+                    case 8:
+                        /*if (FindHeading() < -.8)
+                            AnnounceInversion(disToNextTurn);
+                        else*/
+                        AnnounceExitLeft(hint, disToNextTurn);
+                        break;
+                    case 9:
+                        AnnounceExitRight(hint, disToNextTurn);
+                        break;
+                }
+
+                if (distance < tPoint[3])
+                {
+                    AnnounceDest(distance);
+                }
+
+                _LastHintDistance = DistanceRemaining;
+                _LastHint = hint;
             }
+            catch (Exception problem) {
+                throw new Exception("Process(): " + problem.Message + " when hint=" + hint + ", distance=" + disToNextTurn);
 
-            if (distance < tPoint[3])
-            {
-                AnnounceDest(distance);
             }
-
-            LastHintDistance = DistanceRemaining;
-            LastHint = hint;
-        }
-
-        private void ResetDirective()
-        {
-            TurningR = 0;
-            TurningL = 0;
         }
 
         private int FindSide()
         {
             int side = 0;
             Vector3 Pos = CurrentVehicle.Position;
-            Vector2 DCAR = new Vector2(Pos.X - LastPos.X, Pos.Y - LastPos.Y);
-            Vector2 DDST = new Vector2(Destination.X - LastPos.X, Destination.Y - LastPos.Y);
+            Vector2 DCAR = new Vector2(Pos.X - _LastPos.X, Pos.Y - _LastPos.Y);
+            Vector2 DDST = new Vector2(Destination.X - _LastPos.X, Destination.Y - _LastPos.Y);
             float HCAR = DCAR.ToHeading();
             float HDST = DDST.ToHeading();
             side = HCAR > HDST ? 1 : -1;    // 1 = right side, -1, left side
@@ -334,8 +337,8 @@ namespace GTA5Navigator
         private float FindHeading()
         {
             Vector3 Pos = CurrentVehicle.Position;
-            Vector2 DCAR = new Vector2(Pos.X - LastPos.X, Pos.Y - LastPos.Y);
-            Vector2 DDST = new Vector2(Destination.X - LastPos.X, Destination.Y - LastPos.Y);
+            Vector2 DCAR = new Vector2(Pos.X - _LastPos.X, Pos.Y - _LastPos.Y);
+            Vector2 DDST = new Vector2(Destination.X - _LastPos.X, Destination.Y - _LastPos.Y);
             float HCAR = DCAR.ToHeading();
             float HDST = DDST.ToHeading();
             return Convert.ToSingle(Math.Cos(Math.Abs(HCAR - HDST))); // 1 = right, 0 normal, -1 opposite
@@ -343,29 +346,28 @@ namespace GTA5Navigator
 
         private void AnnounceDest(float distance)
         {
-
-            if (ToDest <= 0 && distance > tPoint[3])
+            if (Progress(0) <= 0 && distance > tPoint[3])
             {
                 AnnounceText(distance, NavText.Hint[(int)NavVoice.Dest.Hint], NavText.Dir[(int)NavVoice.Dest.Dir]);
             }
-            else if (ToDest <= 0 && InRange(distance, tPoint[2], tPoint[3]))
+            else if (Progress(0) <= 0 && InRange(distance, tPoint[2], tPoint[3]))
             {
-                ToDest = 1;
-                LastPos = CurrentVehicle.Position;
+                SetProgress(0, 1);
+                _LastPos = CurrentVehicle.Position;
                 Announce(NavVoice.In150mDest, true);
             }
-            else if (ToDest <= 1 && InRange(distance, tPoint[1], tPoint[2]))
+            else if (Progress(0) <= 1 && InRange(distance, tPoint[1], tPoint[2]))
             {
-                ToDest = 2;
-                LastPos = CurrentVehicle.Position;
+                SetProgress(0, 2);
+                _LastPos = CurrentVehicle.Position;
                 Announce(NavVoice.In100mDest, true);
             }
             else if (!DestinationReached && InRange(distance, 0, dPoint))
             {
                 AnnounceDestAtSide();
-                ToDest = 4;
+                SetProgress(0, 4);
                 DestinationReached = true;
-                ResetDirective();
+                ResetDriving(0);
             }
         }
 
@@ -386,144 +388,109 @@ namespace GTA5Navigator
             }
         }
 
-        private void AnnounceTurnL(float distance)
+        private void BeginDriving(int op)
         {
-            TurningR = 0;
-            if (distance > LastTurnDistance) TurningL = 0;
+            for(int i=0; i< _Progress.Length; i++)
+            {
+                if (i != op) _Progress[i] = 0;
+            }
+        }
 
-            if (TurningL <= 0 && distance > tPoint[4])
+        private void ResetDriving(int op)
+        {
+            _Progress[op] = 0;
+        }
+
+        private int Progress(int op)
+        {
+            return _Progress[op];
+        }
+
+        private void SetProgress(int op, int state)
+        {
+            _Progress[op] = state;
+        }
+
+        private void DriveTo(int hint, float distance, NavSound[] navVoice)
+        {
+            BeginDriving(hint);
+
+            if (distance > LastTurnDistance)
             {
-                AnnounceText(distance, NavText.Hint[(int)NavVoice.NowTurnL.Hint], NavText.Dir[(int)NavVoice.NowTurnL.Dir]);
+                // We are going back
+                if (InRange(distance,tPoint[0],tPoint[1]))
+                {
+                    SetProgress(hint, 3);
+                }
+                else if (InRange(distance, tPoint[1], tPoint[2]))
+                {
+                    SetProgress(hint, 2);
+                }
+                else if (InRange(distance, tPoint[2], tPoint[3]))
+                {
+                    SetProgress(hint, 1);
+                }
+                else if (InRange(distance, tPoint[3], tPoint[4]))
+                {
+                    SetProgress(hint, 0);
+                }
             }
-            else if (TurningL <= 0 && InRange(distance, tPoint[3], tPoint[4]))
+
+            if (Progress(hint) <= 0 && distance > tPoint[4])
             {
-                TurningL = 1;
-                Announce(NavVoice.In200mTurnL);
+                AnnounceText(distance, NavText.Hint[(int)navVoice[0].Hint], NavText.Dir[(int)navVoice[0].Dir]);
             }
-            else if (TurningL <= 1 && InRange(distance, tPoint[2], tPoint[3]))
+            else if (Progress(hint) <= 0 && InRange(distance, tPoint[3], tPoint[4]))
             {
-                TurningL = 2;
-                Announce(NavVoice.In150mTurnL);
+                SetProgress(hint, 1);
+                Announce(navVoice[1]);
             }
-            else if (TurningL <= 2 && InRange(distance, tPoint[1], tPoint[2]))
+            else if (Progress(hint) <= 1 && InRange(distance, tPoint[2], tPoint[3]))
             {
-                TurningL = 3;
-                Announce(NavVoice.In100mTurnL);
+                SetProgress(hint, 2);
+                Announce(navVoice[2]);
             }
-            else if (TurningL <= 3 && InRange(distance, tPoint[0], tPoint[1]))
+            else if (Progress(hint) <= 2 && InRange(distance, tPoint[1], tPoint[2]))
             {
-                TurningL = 4;
-                Announce(NavVoice.NowTurnL);
+                SetProgress(hint, 3);
+                Announce(navVoice[3]);
+            }
+            else if (Progress(hint) <= 3 && InRange(distance, tPoint[0], tPoint[1]))
+            {
+                SetProgress(hint, 4);
+                Announce(navVoice[4]);
             }
             LastTurnDistance = distance;
         }
 
-        private void AnnounceTurnR(float distance)
+        private void AnnounceTurnL(int hint, float distance)
         {
-            TurningL = 0;
-            if (distance > LastTurnDistance) TurningR = 0;
-
-            if (TurningR <= 0 && distance > tPoint[4])
-            {
-                AnnounceText(distance, NavText.Hint[(int)NavVoice.NowTurnR.Hint], NavText.Dir[(int)NavVoice.NowTurnR.Dir]);
-            }
-            else if (TurningR <= 0 && InRange(distance, tPoint[3], tPoint[4]))
-            {
-                TurningR = 1;
-                Announce(NavVoice.In200mTurnR);
-            }
-            else if (TurningR <= 1 && InRange(distance, tPoint[2], tPoint[3]))
-            {
-                TurningR = 2;
-                Announce(NavVoice.In150mTurnR);
-            }
-            else if (TurningR <= 2 && InRange(distance, tPoint[1], tPoint[2]))
-            {
-                TurningR = 3;
-                Announce(NavVoice.In100mTurnR);
-            }
-            else if (TurningR <= 3 && InRange(distance, tPoint[0], tPoint[1]))
-            {
-                TurningR = 4;
-                Announce(NavVoice.NowTurnR);
-            }
-            LastTurnDistance = distance;
+            DriveTo(hint, distance, 
+                new[]{ NavVoice.NowTurnL, NavVoice.In200mTurnL, NavVoice.In150mTurnL, NavVoice.In100mTurnL, NavVoice.NowTurnL });
         }
 
-        private void AnnounceExitRight(float distance)
+        private void AnnounceTurnR(int hint, float distance)
         {
-            TurningL = 0;
-
-            if (TurningR <= 0 && distance > tPoint[4])
-            {
-                AnnounceText(distance, NavText.Hint[(int)NavVoice.ExitR.Hint], NavText.Dir[(int)NavVoice.ExitR.Dir]);
-            }
-            else if (TurningR <= 0 && InRange(distance, tPoint[3], tPoint[4]))
-            {
-                TurningR = 1;
-                Announce(NavVoice.In200mExitR);
-            }
-            else if (TurningR <= 1 && InRange(distance, tPoint[2], tPoint[3]))
-            {
-                TurningR = 2;
-                Announce(NavVoice.In150mExitR);
-            }
-            else if (TurningR <= 3 && InRange(distance, tPoint[0], tPoint[2]))
-            {
-                TurningR = 4;
-                Announce(NavVoice.ExitR);
-            }
+            DriveTo(hint, distance,
+                new[] { NavVoice.NowTurnR, NavVoice.In200mTurnR, NavVoice.In150mTurnR, NavVoice.In100mTurnR, NavVoice.NowTurnR });
         }
 
-        private void AnnounceExitLeft(float distance)
+        private void AnnounceExitRight(int hint, float distance)
         {
-            TurningR = 0;
-
-            if (TurningL <= 0 && distance > tPoint[4])
-            {
-
-                AnnounceText(distance, NavText.Hint[(int)NavVoice.ExitL.Hint], NavText.Dir[(int)NavVoice.ExitL.Dir]);
-            }
-            else if (TurningL <= 0 && InRange(distance, tPoint[3], tPoint[4]))
-            {
-                TurningL = 1;
-                Announce(NavVoice.In200mExitL);
-            }
-            else if (TurningL <= 1 && InRange(distance, tPoint[2], tPoint[3]))
-            {
-                TurningL = 2;
-                Announce(NavVoice.In150mExitL);
-            }
-            else if (TurningL <= 3 && InRange(distance, tPoint[0], tPoint[2]))
-            {
-                TurningL = 4;
-                Announce(NavVoice.ExitL);
-            }
+            DriveTo(hint, distance,
+                new[] { NavVoice.ExitR, NavVoice.In200mExitR, NavVoice.In150mExitR, NavVoice.In100mExitR, NavVoice.ExitR });
         }
 
-        private void AnnounceInversion(float distance)
+        private void AnnounceExitLeft(int hint, float distance)
         {
-            TurningR = 0;
+            DriveTo(hint, distance,
+                new[] { NavVoice.ExitL, NavVoice.In200mExitL, NavVoice.In150mExitL, NavVoice.In100mExitL, NavVoice.ExitR });
+        }
 
-            if (TurningL <= 0 && distance > tPoint[4])
-            {
-                AnnounceText(distance, NavText.Hint[(int)NavVoice.NowInversion.Hint], NavText.Dir[(int)NavVoice.NowInversion.Dir]);
-            }
-            else if (TurningL <= 0 && InRange(distance, tPoint[3], tPoint[4]))
-            {
-                TurningL = 1;
-                Announce(NavVoice.In200mInversion);
-            }
-            if (TurningL <= 1 && InRange(distance, tPoint[2], tPoint[3]))
-            {
-                TurningL = 2;
-                Announce(NavVoice.In150mInversion);
-            }
-            else if (TurningL <= 3 && InRange(distance, tPoint[0], tPoint[2]))
-            {
-                TurningL = 4;
-                Announce(NavVoice.NowInversion);
-            }
+        private void AnnounceInversion(int hint, float distance)
+        {
+            DriveTo(hint, distance,
+                new[] { NavVoice.NowInversion, NavVoice.In200mInversion, NavVoice.In150mInversion, NavVoice.In100mInversion, NavVoice.NowInversion });
         }
 
         public static Tuple<string, float, float> GenerateDirectionsToCoord(Vector3 dest)
