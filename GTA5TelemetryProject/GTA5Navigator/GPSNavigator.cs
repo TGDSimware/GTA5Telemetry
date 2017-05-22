@@ -1,25 +1,14 @@
 ﻿/// <summary>
-/// GTA V Codemasters Telemetry Plugin
-/// 
-/// This plugin enables GTA 5 to send telemetry data packets just like a Codemasters game (e.g. DiRT Rally) can do
-/// Now you can use any Codemasters-compatible simracing dashboard with GTA5!
-/// 
+/// GTA V Navigator Mod
+///  
 /// If this code works, it has been written by Carlo Iovino (carlo.iovino@outlook.com)
 /// The Green Dragon Youtube Channel (www.youtube.com/carloxofficial)
 /// 
 /// </summary>
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.IO;
-using System.Media;
 using GTA;
 using GTA.Math;
 using GTA.Native;
-using System.Threading;
-using System.Runtime.InteropServices;
 
 namespace GTA5Navigator
 {
@@ -33,11 +22,11 @@ namespace GTA5Navigator
 
     class GPSNavigator : Script
     {
-        private float LastHint = -1;
-        private float LastHintDistance = -1;
-        private bool IsRunning;
-        private Vector3 CurrentPos;
-        private Vector3 LastPos;
+        float LastHint = -1;
+        float LastHintDistance = -1;
+        bool DestinationReached;
+        Vector3 CurrentPos;
+        Vector3 LastPos;
         int TurningL = 0;
         int TurningR = 0;
         int ToDest = 0;
@@ -49,15 +38,28 @@ namespace GTA5Navigator
         private Vector3 Destination;
 
         private int[] tPoint = { 5, 50, 110, 160, 210 }; //Turning points
-        private int _DEBUG = 0;
+        private bool _DEBUG = false;
+        private bool TextNotes = false;
+        private int AnnounceIdleTime = 2500;
+        private float VolumeFactor = 1;
+        private AudioManager _AudioManager;
 
         public GPSNavigator()
-        {            
-            LoadSettings();
-            
-            IsRunning = false;
-            Destination = new Vector3();
-            Tick += OnTick; // Add OnTick() as an event handler for the Tick event            
+        {
+            try
+            {
+                LoadSettings();
+                
+                Destination = new Vector3();
+                _AudioManager = new AudioManager();
+                _AudioManager.BasePath = @"scripts\GTA5Navigator\gpsvoices";
+                
+                Tick += OnTick; // Add OnTick() as an event handler for the Tick event            
+            }
+            catch (Exception problem)
+            {
+                UI.Notify("Cannot Instantiate GPS Navigator: " + problem.Message);
+            }
         }
 
         private void LoadSettings()
@@ -65,10 +67,10 @@ namespace GTA5Navigator
             try
             {
                 ScriptSettings scriptSettings = ScriptSettings.Load(@"scripts\GTA5Navigator\Settings.ini");
-                
+
                 // Load settings                               
                 string hints = scriptSettings.GetValue<string>("LANGUAGE", "HINTS",
-                    "Girare,Proseguire dritto,Inversione,Uscita,Direzione Errata,Ricalcolo,Arrivo a destinazione");
+                    "Girare,Proseguire dritto,Seguire la strada,Inversione,Uscita,Direzione Errata,Ricalcolo,Arrivo a destinazione");
                 NavText.Hint = hints.Split(',');
 
                 string directions = scriptSettings.GetValue<string>("LANGUAGE", "DIRECTIONS", "-,Right,Left");
@@ -77,20 +79,22 @@ namespace GTA5Navigator
                 NavText.Unit = scriptSettings.GetValue<string>("LANGUAGE", "UNIT", "Km");
                 NavText.MessageOn = scriptSettings.GetValue<string>("LANGUAGE", "MESSAGEON", "Navigatore attivo. Distanza stimata");
 
-                string points = scriptSettings.GetValue<string>("SETTINGS", "TURNPOINTS", "5,40,105,155,210");
+                string points = scriptSettings.GetValue<string>("ENGINE", "TURNPOINTS", "5,40,105,155,210");
                 string[] sPoints = points.Split(',');
                 for (int i = 0; i < sPoints.Length; i++) tPoint[i] = Convert.ToInt32(sPoints[i]);
 
-                int updateInterval = scriptSettings.GetValue<int>("SETTINGS", "UPDATEINTERVAL", 100);
+                int updateInterval = scriptSettings.GetValue<int>("ENGINE", "UPDATEINTERVAL", 100);
                 this.Interval = updateInterval;
 
-                this.dPoint = scriptSettings.GetValue<float>("SETTINGS", "DPOINT", 20);                
+                this.dPoint = scriptSettings.GetValue<int>("ENGINE", "DPOINT", 20);
+                AnnounceIdleTime = scriptSettings.GetValue<int>("ENGINE", "ANNOUNCEIDLETIME", 2500);
 
-                int volume = scriptSettings.GetValue<int>("SETTINGS", "VOLUME", 10);
-                //VolumeControl.SetVolume(volume);
+                this.VolumeFactor = scriptSettings.GetValue<int>("ENGINE", "VOLUMEFACTOR", 100) / 100f;
 
-                _DEBUG = scriptSettings.GetValue<int>("SETTINGS", "DEBUG", 1);
-                if (_DEBUG == 1)
+                TextNotes = scriptSettings.GetValue<bool>("UI", "TEXTNOTES", false);
+
+                _DEBUG = scriptSettings.GetValue<bool>("ENGINE", "DEBUG", false);
+                if (_DEBUG)
                 {
                     UI.Notify("LoadSettings(): Settings loaded");
                 }
@@ -98,7 +102,7 @@ namespace GTA5Navigator
             catch (Exception e)
             {
                 UI.Notify("LoadSettings(): " + e.Message);
-                _DEBUG = 1;
+                _DEBUG = true;
                 this.Interval = 100;
             }
         }
@@ -117,8 +121,8 @@ namespace GTA5Navigator
                     if (Game.IsWaypointActive)
                     {
                         if (!World.GetWaypointPosition().Equals(Destination))
-                        {
-                            this.Start(vehicle, World.GetWaypointPosition());
+                        {                            
+                            this.StartNavigation(vehicle, World.GetWaypointPosition());
                         }
                         else
                         {
@@ -133,17 +137,22 @@ namespace GTA5Navigator
             }
         }
 
-        private void Start(Vehicle v, Vector3 destination)
+        private void StartNavigation(Vehicle v, Vector3 destination)
         {
             try
             {
-                Announce(Voice.Calculating);
-                LoadSettings();
+                LoadSettings();             
                 CurrentVehicle = v;
                 LastPos = v.Position;
                 Destination = destination;
                 ToDest = 0;
-                IsRunning = true;
+                DestinationReached = true;
+
+                // Preloads All Audio
+                _AudioManager.VolumeFactor = VolumeFactor;
+                _AudioManager.Preload(NavVoice.Voices);
+
+                Announce(NavVoice.Calculating);
                 var travelDistance = Math.Round(Math.Ceiling(v.Position.DistanceTo2D(Destination)) / 1000d, 1);
 
                 if (travelDistance > 0)
@@ -165,7 +174,13 @@ namespace GTA5Navigator
             }
         }
 
-        private void Announce(VoiceEntry voice, bool mute = false)
+        private void AnnounceText(float dist, string hint, string dir)
+        {
+            string notify = Math.Round(dist) + "m: " + hint + " " + dir;
+            UI.Notify(notify);
+        }
+
+        private void Announce(NavSound voice, bool mute = false)
         {
             try
             {
@@ -180,24 +195,19 @@ namespace GTA5Navigator
                     {
                         notify = NavText.Hint[(int)voice.Hint] + " " + NavText.Dir[(int)voice.Dir];
                     }
-                    UI.Notify(notify);
+                    if (TextNotes) UI.Notify(notify);
                 }
-                catch(Exception problem)
+                catch (Exception problem)
                 {
                     UI.Notify("Announce(): " + problem.Message);
-                }                
-
-                using (System.Media.SoundPlayer snd = new System.Media.SoundPlayer())
-                {
-                    if (!mute)
-                    {
-                        String wavFilename = @"scripts\GTA5Navigator\gpsvoices\" + voice.File + ".wav";
-                        snd.SoundLocation = wavFilename;
-                        snd.Load();
-                        snd.Play();
-                        Wait(2500);
-                    }
                 }
+
+                if (!mute)
+                {
+                    float duration = _AudioManager.Play(voice.Key);
+                    Wait(Convert.ToInt32(duration * 1000f));
+                }
+
             }
             catch (Exception problem)
             {
@@ -236,11 +246,11 @@ namespace GTA5Navigator
             float distance = DistanceRemaining;
             float delta = Math.Abs(distance - LastHintDistance);
 
-            if (_DEBUG == 1)
+            if (_DEBUG)
             {
                 UI.ShowSubtitle("Hint " + hint + " @ " + disToNextTurn + "m delta = " + delta + "m");
             }
-
+ 
             switch (hint)
             {
                 case 0:
@@ -250,9 +260,9 @@ namespace GTA5Navigator
                     if (disToNextTurn == 0)
                     {
                         Recalc++;
-                        if (Recalc >= 20)
+                        if (Recalc >= 150)
                         {
-                            Announce(Voice.WrongDirection);
+                            Announce(NavVoice.WrongDirection);
                             Recalc = 0;
                         }
                     }
@@ -264,7 +274,7 @@ namespace GTA5Navigator
                     break;
                 case 2:
                     ResetDirective();
-                    if (LastHint != 2) Announce(Voice.Keep);
+                    if (LastHint != 2) Announce(NavVoice.Keep);
                     break;
                 case 3:
                     ResetDirective();
@@ -279,14 +289,15 @@ namespace GTA5Navigator
                 case 6:
                     // Never!
                     break;
-                case 7: //Keep right
+                case 7:
+                    if (LastHint != 7 && LastHint != 2) Announce(NavVoice.Follow);
                     ResetDirective();
                     break;
                 case 8:
-                    if (FindHeading() < -.8)
+                    /*if (FindHeading() < -.8)
                         AnnounceInversion(disToNextTurn);
-                    else
-                        AnnounceExitLeft(disToNextTurn);
+                    else*/
+                    AnnounceExitLeft(disToNextTurn);
                     break;
                 case 9:
                     AnnounceExitRight(disToNextTurn);
@@ -332,23 +343,28 @@ namespace GTA5Navigator
 
         private void AnnounceDest(float distance)
         {
-            if (ToDest <= 0 && InRange(distance, tPoint[2], tPoint[3]))
+
+            if (ToDest <= 0 && distance > tPoint[3])
+            {
+                AnnounceText(distance, NavText.Hint[(int)NavVoice.Dest.Hint], NavText.Dir[(int)NavVoice.Dest.Dir]);
+            }
+            else if (ToDest <= 0 && InRange(distance, tPoint[2], tPoint[3]))
             {
                 ToDest = 1;
                 LastPos = CurrentVehicle.Position;
-                Announce(Voice.in150mDest, true);
+                Announce(NavVoice.In150mDest, true);
             }
             else if (ToDest <= 1 && InRange(distance, tPoint[1], tPoint[2]))
             {
                 ToDest = 2;
                 LastPos = CurrentVehicle.Position;
-                Announce(Voice.in100mDest, true);
+                Announce(NavVoice.In100mDest, true);
             }
-            else if (IsRunning && InRange(distance, 0, dPoint))
+            else if (!DestinationReached && InRange(distance, 0, dPoint))
             {
                 AnnounceDestAtSide();
                 ToDest = 4;
-                IsRunning = false;
+                DestinationReached = true;
                 ResetDirective();
             }
         }
@@ -358,15 +374,15 @@ namespace GTA5Navigator
             int side = FindSide();
             if (side == 1)
             {
-                Announce(Voice.DestRight);
+                Announce(NavVoice.DestRight);
             }
             else if (side == -1)
             {
-                Announce(Voice.DestLeft);
+                Announce(NavVoice.DestLeft);
             }
             else
             {
-                Announce(Voice.Dest);
+                Announce(NavVoice.Dest);
             }
         }
 
@@ -375,25 +391,29 @@ namespace GTA5Navigator
             TurningR = 0;
             if (distance > LastTurnDistance) TurningL = 0;
 
-            if (TurningL <= 0 && InRange(distance, tPoint[3], tPoint[4]))
+            if (TurningL <= 0 && distance > tPoint[4])
+            {
+                AnnounceText(distance, NavText.Hint[(int)NavVoice.NowTurnL.Hint], NavText.Dir[(int)NavVoice.NowTurnL.Dir]);
+            }
+            else if (TurningL <= 0 && InRange(distance, tPoint[3], tPoint[4]))
             {
                 TurningL = 1;
-                Announce(Voice.In200mTurnL);
+                Announce(NavVoice.In200mTurnL);
             }
             else if (TurningL <= 1 && InRange(distance, tPoint[2], tPoint[3]))
             {
                 TurningL = 2;
-                Announce(Voice.In150mTurnL);
+                Announce(NavVoice.In150mTurnL);
             }
             else if (TurningL <= 2 && InRange(distance, tPoint[1], tPoint[2]))
             {
                 TurningL = 3;
-                Announce(Voice.In100mTurnL);
+                Announce(NavVoice.In100mTurnL);
             }
             else if (TurningL <= 3 && InRange(distance, tPoint[0], tPoint[1]))
-            {                
+            {
                 TurningL = 4;
-                Announce(Voice.NowTurnL);
+                Announce(NavVoice.NowTurnL);
             }
             LastTurnDistance = distance;
         }
@@ -402,25 +422,30 @@ namespace GTA5Navigator
         {
             TurningL = 0;
             if (distance > LastTurnDistance) TurningR = 0;
-            if (TurningR <= 0 && InRange(distance, tPoint[3], tPoint[4]))
+
+            if (TurningR <= 0 && distance > tPoint[4])
+            {
+                AnnounceText(distance, NavText.Hint[(int)NavVoice.NowTurnR.Hint], NavText.Dir[(int)NavVoice.NowTurnR.Dir]);
+            }
+            else if (TurningR <= 0 && InRange(distance, tPoint[3], tPoint[4]))
             {
                 TurningR = 1;
-                Announce(Voice.In200mTurnR);
+                Announce(NavVoice.In200mTurnR);
             }
             else if (TurningR <= 1 && InRange(distance, tPoint[2], tPoint[3]))
             {
                 TurningR = 2;
-                Announce(Voice.In150mTurnR);
+                Announce(NavVoice.In150mTurnR);
             }
             else if (TurningR <= 2 && InRange(distance, tPoint[1], tPoint[2]))
             {
                 TurningR = 3;
-                Announce(Voice.In100mTurnR);
+                Announce(NavVoice.In100mTurnR);
             }
             else if (TurningR <= 3 && InRange(distance, tPoint[0], tPoint[1]))
             {
                 TurningR = 4;
-                Announce(Voice.NowTurnR);
+                Announce(NavVoice.NowTurnR);
             }
             LastTurnDistance = distance;
         }
@@ -428,60 +453,76 @@ namespace GTA5Navigator
         private void AnnounceExitRight(float distance)
         {
             TurningL = 0;
-            if (TurningR <= 0 && InRange(distance, tPoint[3], tPoint[4]))
+
+            if (TurningR <= 0 && distance > tPoint[4])
+            {
+                AnnounceText(distance, NavText.Hint[(int)NavVoice.ExitR.Hint], NavText.Dir[(int)NavVoice.ExitR.Dir]);
+            }
+            else if (TurningR <= 0 && InRange(distance, tPoint[3], tPoint[4]))
             {
                 TurningR = 1;
-                Announce(Voice.In200mExitR);
+                Announce(NavVoice.In200mExitR);
             }
             else if (TurningR <= 1 && InRange(distance, tPoint[2], tPoint[3]))
             {
                 TurningR = 2;
-                Announce(Voice.In150mExitR);
+                Announce(NavVoice.In150mExitR);
             }
             else if (TurningR <= 3 && InRange(distance, tPoint[0], tPoint[2]))
             {
                 TurningR = 4;
-                Announce(Voice.ExitR);
+                Announce(NavVoice.ExitR);
             }
         }
 
         private void AnnounceExitLeft(float distance)
         {
             TurningR = 0;
-            if (TurningL <= 0 && InRange(distance, tPoint[3], tPoint[4]))
+
+            if (TurningL <= 0 && distance > tPoint[4])
+            {
+
+                AnnounceText(distance, NavText.Hint[(int)NavVoice.ExitL.Hint], NavText.Dir[(int)NavVoice.ExitL.Dir]);
+            }
+            else if (TurningL <= 0 && InRange(distance, tPoint[3], tPoint[4]))
             {
                 TurningL = 1;
-                Announce(Voice.In200mExitL);
+                Announce(NavVoice.In200mExitL);
             }
             else if (TurningL <= 1 && InRange(distance, tPoint[2], tPoint[3]))
             {
                 TurningL = 2;
-                Announce(Voice.In150mExitL);
+                Announce(NavVoice.In150mExitL);
             }
             else if (TurningL <= 3 && InRange(distance, tPoint[0], tPoint[2]))
             {
                 TurningL = 4;
-                Announce(Voice.ExitL);
+                Announce(NavVoice.ExitL);
             }
         }
 
         private void AnnounceInversion(float distance)
         {
             TurningR = 0;
-            if (TurningL <= 0 && InRange(distance, tPoint[3], tPoint[4]))
+
+            if (TurningL <= 0 && distance > tPoint[4])
+            {
+                AnnounceText(distance, NavText.Hint[(int)NavVoice.NowInversion.Hint], NavText.Dir[(int)NavVoice.NowInversion.Dir]);
+            }
+            else if (TurningL <= 0 && InRange(distance, tPoint[3], tPoint[4]))
             {
                 TurningL = 1;
-                Announce(Voice.In200mInversion);
+                Announce(NavVoice.In200mInversion);
             }
             if (TurningL <= 1 && InRange(distance, tPoint[2], tPoint[3]))
             {
                 TurningL = 2;
-                Announce(Voice.In150mInversion);
+                Announce(NavVoice.In150mInversion);
             }
             else if (TurningL <= 3 && InRange(distance, tPoint[0], tPoint[2]))
             {
                 TurningL = 4;
-                Announce(Voice.NowInversion);
+                Announce(NavVoice.NowInversion);
             }
         }
 
