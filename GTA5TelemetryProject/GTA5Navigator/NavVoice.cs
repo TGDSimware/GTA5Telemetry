@@ -27,47 +27,31 @@ namespace GTA5Navigator
 
     static public class NavVoice
     {
-        public static NavSound In200mTurnL = new NavSound("in200m-turn-l", Hint.TURN, Dir.LEFT, 200);
-        public static NavSound In150mTurnL = new NavSound("in150m-turn-l", Hint.TURN, Dir.LEFT, 150);
-        public static NavSound In100mTurnL = new NavSound("in100m-turn-l", Hint.TURN, Dir.LEFT, 100);
-        public static NavSound NowTurnL = new NavSound("now-turn-l", Hint.TURN, Dir.LEFT, 0);
+        public static NavSound In400m = new NavSound("in400m", Hint.TURN, Dir.LEFT, 200);        
+        public static NavSound In300m = new NavSound("in300m", Hint.TURN, Dir.LEFT, 200);
+        public static NavSound In250m = new NavSound("in250m", Hint.TURN, Dir.LEFT, 200);
+        public static NavSound In200m = new NavSound("in200m", Hint.TURN, Dir.LEFT, 200);
+        public static NavSound In150m = new NavSound("in150m", Hint.TURN, Dir.LEFT, 150);
+        public static NavSound In100m = new NavSound("in100m", Hint.TURN, Dir.LEFT, 100);
+        public static NavSound TurnL = new NavSound("turn-l", Hint.TURN, Dir.LEFT, 0);
+        public static NavSound TurnR = new NavSound("turn-r", Hint.TURN, Dir.LEFT, 0);
 
-        public static NavSound In200mTurnR = new NavSound("in200m-turn-r", Hint.TURN, Dir.RIGHT, 200);
-        public static NavSound In150mTurnR = new NavSound("in150m-turn-r", Hint.TURN, Dir.RIGHT, 150);
-        public static NavSound In100mTurnR = new NavSound("in100m-turn-r", Hint.TURN, Dir.RIGHT, 100);
-        public static NavSound NowTurnR = new NavSound("now-turn-r", Hint.TURN, Dir.RIGHT, 0);
-
-        public static NavSound In200mDest = new NavSound("in200m-dest", Hint.DEST, Dir.NONE, 200);
-        public static NavSound In150mDest = new NavSound("in150m-dest", Hint.DEST, Dir.NONE, 150);
-        public static NavSound In100mDest = new NavSound("in100m-dest", Hint.DEST, Dir.NONE, 100);
         public static NavSound DestRight = new NavSound("dest-r", Hint.DEST, Dir.NONE, 0);
         public static NavSound DestLeft = new NavSound("dest-l", Hint.DEST, Dir.NONE, 0);
         public static NavSound Dest = new NavSound("dest", Hint.DEST, Dir.NONE, 0);
 
-        public static NavSound In200mInversion = new NavSound("in200m-inversion", Hint.INVERSION, Dir.NONE, 200);
-        public static NavSound In150mInversion = new NavSound("in150m-inversion", Hint.INVERSION, Dir.NONE, 150);
-        public static NavSound In100mInversion = new NavSound("in100m-inversion", Hint.INVERSION, Dir.NONE, 100);
-        public static NavSound NowInversion = new NavSound("now-inversion", Hint.INVERSION, Dir.NONE, 0);
-
-        public static NavSound In200mExitR = new NavSound("in200m-exit-r", Hint.EXIT, Dir.RIGHT, 200);
-        public static NavSound In150mExitR = new NavSound("in150m-exit-r", Hint.EXIT, Dir.RIGHT, 150);
-        public static NavSound In100mExitR = new NavSound("in100m-exit-r", Hint.EXIT, Dir.RIGHT, 100);
+        public static NavSound Inversion = new NavSound("inversion", Hint.INVERSION, Dir.NONE, 0);
         public static NavSound ExitR = new NavSound("exit-r", Hint.EXIT, Dir.RIGHT, 0);
-
-        public static NavSound In200mExitL = new NavSound("in200m-exit-l", Hint.EXIT, Dir.LEFT, 200);
-        public static NavSound In150mExitL = new NavSound("in150m-exit-l", Hint.EXIT, Dir.LEFT, 150);
-        public static NavSound In100mExitL = new NavSound("in100m-exit-l", Hint.EXIT, Dir.LEFT, 100);
         public static NavSound ExitL = new NavSound("exit-l", Hint.EXIT, Dir.LEFT, 0);
 
         public static NavSound Keep = new NavSound("keep", Hint.KEEP, Dir.NONE, 0);
         public static NavSound Follow = new NavSound("follow", Hint.FOLLOW, Dir.NONE, 0);
         public static NavSound Calculating = new NavSound("calculating", Hint.RECOMP, Dir.NONE, 0);
-        //public static NavSound Recomputing = new NavSound( "recomputing", Hint.RECOMP,Dir.NONE,0 );
+        
         public static NavSound WrongDirection = new NavSound("wrong-direction", Hint.WRONG, Dir.NONE, 0);
 
         public static NavSound[] Voices =
-            { In200mTurnL, In150mTurnL, In100mTurnL, NowTurnL, In200mTurnR, In150mTurnR, In100mTurnR, NowTurnR, In200mDest,
-        In150mDest, In100mDest, DestRight, DestLeft, Dest, In200mInversion, In150mInversion, In100mInversion, NowInversion,
-        In200mExitR, In150mExitR, In100mExitR, ExitR, In200mExitL, In150mExitL, In100mExitL, ExitL, Keep, Calculating, WrongDirection, Follow };
+            { In400m, In300m, In250m, In200m, In150m, In100m, DestRight, DestLeft, Dest, Inversion,
+              TurnL, TurnR, ExitR, ExitL, Keep, Calculating, WrongDirection, Follow };
     }
 }
