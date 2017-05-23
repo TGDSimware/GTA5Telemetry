@@ -6,17 +6,17 @@ using System.Threading.Tasks;
 
 namespace GTA5Navigator
 {
-    public enum Hint { TURN = 0, KEEP, FOLLOW, INVERSION, EXIT, WRONG, RECOMP, DEST}
+    public enum Hint { TURN = 0, KEEP, FOLLOW, INVERSION, EXIT, WRONG, RECOMP, DEST, DISTANCE}
     public enum Dir { NONE = 0, RIGHT, LEFT };
 
-    public class NavSound : ISound
+    public class NavVoice : ISound
     {
         public string Key { get; }
         public Hint Hint { get; }
         public Dir Dir { get; }
         public int Dist { get; }
 
-        public NavSound(string k, Hint h, Dir dir, int dst)
+        public NavVoice(string k, Hint h, Dir dir, int dst)
         {
             Key = k;
             Hint = h;
@@ -25,33 +25,37 @@ namespace GTA5Navigator
         }
     }
 
-    static public class NavVoice
+    static public class NavVoices
     {
-        public static NavSound In400m = new NavSound("in400m", Hint.TURN, Dir.LEFT, 200);        
-        public static NavSound In300m = new NavSound("in300m", Hint.TURN, Dir.LEFT, 200);
-        public static NavSound In250m = new NavSound("in250m", Hint.TURN, Dir.LEFT, 200);
-        public static NavSound In200m = new NavSound("in200m", Hint.TURN, Dir.LEFT, 200);
-        public static NavSound In150m = new NavSound("in150m", Hint.TURN, Dir.LEFT, 150);
-        public static NavSound In100m = new NavSound("in100m", Hint.TURN, Dir.LEFT, 100);
-        public static NavSound TurnL = new NavSound("turn-l", Hint.TURN, Dir.LEFT, 0);
-        public static NavSound TurnR = new NavSound("turn-r", Hint.TURN, Dir.LEFT, 0);
+        public static NavVoice In450m = new NavVoice("in450m", Hint.DISTANCE, Dir.NONE, 200);
+        public static NavVoice In400m = new NavVoice("in400m", Hint.DISTANCE, Dir.NONE, 200);
+        public static NavVoice In350m = new NavVoice("in350m", Hint.DISTANCE, Dir.NONE, 200);
+        public static NavVoice In300m = new NavVoice("in300m", Hint.DISTANCE, Dir.NONE, 200);
+        public static NavVoice In250m = new NavVoice("in250m", Hint.DISTANCE, Dir.NONE, 200);
+        public static NavVoice In200m = new NavVoice("in200m", Hint.DISTANCE, Dir.NONE, 200);
+        public static NavVoice In150m = new NavVoice("in150m", Hint.DISTANCE, Dir.NONE, 150);
+        public static NavVoice In100m = new NavVoice("in100m", Hint.DISTANCE, Dir.NONE, 100);
+        public static NavVoice TurnL = new NavVoice("turn-l", Hint.TURN, Dir.LEFT, 0);
+        public static NavVoice TurnR = new NavVoice("turn-r", Hint.TURN, Dir.RIGHT, 0);
 
-        public static NavSound DestRight = new NavSound("dest-r", Hint.DEST, Dir.NONE, 0);
-        public static NavSound DestLeft = new NavSound("dest-l", Hint.DEST, Dir.NONE, 0);
-        public static NavSound Dest = new NavSound("dest", Hint.DEST, Dir.NONE, 0);
+        public static NavVoice DestRight = new NavVoice("dest-r", Hint.DEST, Dir.NONE, 0);
+        public static NavVoice DestLeft = new NavVoice("dest-l", Hint.DEST, Dir.NONE, 0);
+        public static NavVoice Dest = new NavVoice("dest", Hint.DEST, Dir.NONE, 0);
 
-        public static NavSound Inversion = new NavSound("inversion", Hint.INVERSION, Dir.NONE, 0);
-        public static NavSound ExitR = new NavSound("exit-r", Hint.EXIT, Dir.RIGHT, 0);
-        public static NavSound ExitL = new NavSound("exit-l", Hint.EXIT, Dir.LEFT, 0);
+        public static NavVoice Inversion = new NavVoice("inversion", Hint.INVERSION, Dir.NONE, 0);
+        public static NavVoice ExitR = new NavVoice("exit-r", Hint.EXIT, Dir.RIGHT, 0);
+        public static NavVoice ExitL = new NavVoice("exit-l", Hint.EXIT, Dir.LEFT, 0);
 
-        public static NavSound Keep = new NavSound("keep", Hint.KEEP, Dir.NONE, 0);
-        public static NavSound Follow = new NavSound("follow", Hint.FOLLOW, Dir.NONE, 0);
-        public static NavSound Calculating = new NavSound("calculating", Hint.RECOMP, Dir.NONE, 0);
+        public static NavVoice Keep = new NavVoice("keep", Hint.KEEP, Dir.NONE, 0);
+        public static NavVoice Follow = new NavVoice("follow", Hint.FOLLOW, Dir.NONE, 0);
+        public static NavVoice Calculating = new NavVoice("calculating", Hint.RECOMP, Dir.NONE, 0);
         
-        public static NavSound WrongDirection = new NavSound("wrong-direction", Hint.WRONG, Dir.NONE, 0);
+        public static NavVoice WrongDirection = new NavVoice("wrong-direction", Hint.WRONG, Dir.NONE, 0);
 
-        public static NavSound[] Voices =
+        public static NavVoice[] Voices =
             { In400m, In300m, In250m, In200m, In150m, In100m, DestRight, DestLeft, Dest, Inversion,
               TurnL, TurnR, ExitR, ExitL, Keep, Calculating, WrongDirection, Follow };
+
+        public static NavVoice[] Distances = { In450m, In400m, In350m, In300m, In250m, In200m, In150m, In100m, null, null };
     }
 }
