@@ -39,7 +39,7 @@ namespace GTA5Navigator
         private bool _DEBUG = false;
         private bool TextNotes = false;
         private int AnnounceIdleTime = 2500;
-        private float VolumeFactor = 1;
+        private float _VolumeFactor = 1;
         private AudioManager _AudioManager;
 
         public GPSNavigator()
@@ -88,7 +88,7 @@ namespace GTA5Navigator
                 this.dPoint = scriptSettings.GetValue<int>("ENGINE", "DPOINT", 20);
                 AnnounceIdleTime = scriptSettings.GetValue<int>("ENGINE", "ANNOUNCEIDLETIME", 2500);
 
-                this.VolumeFactor = scriptSettings.GetValue<int>("ENGINE", "VOLUMEFACTOR", 100) / 100f;
+                _VolumeFactor = scriptSettings.GetValue<int>("ENGINE", "VOLUMEFACTOR", 100) / 100f;
 
                 TextNotes = scriptSettings.GetValue<bool>("UI", "TEXTNOTES", false);
 
@@ -154,7 +154,7 @@ namespace GTA5Navigator
                 ResetDriving(0);
 
                 // Preloads All Audio
-                _AudioManager.VolumeFactor = VolumeFactor;
+                _AudioManager.VolumeFactor = _VolumeFactor;
                 _AudioManager.Preload(NavVoices.Voices);
 
                 Announce(NavVoices.Calculating);
@@ -291,23 +291,23 @@ namespace GTA5Navigator
                         else
                         {
                             SetProgress(1, 0);
-                            AnnounceInversion(hint, disToNextTurn);
+                            DriveTo(hint, distance, NavVoices.Inversion);
                         }
                         break;
                     case 2:
                         if (_LastHint != 2) Announce(NavVoices.Keep);
                         break;
                     case 3:
-                        // Never!
+                        UI.Notify("Hint 3 not yet implemented");
                         break;
                     case 4:
-                        AnnounceTurnL(hint, disToNextTurn);
+                        DriveTo(hint, distance, NavVoices.TurnL);
                         break;
                     case 5:
-                        AnnounceTurnR(hint, disToNextTurn);
+                        DriveTo(hint, distance, NavVoices.TurnR);
                         break;
                     case 6:
-                        // Never!
+                        UI.Notify("Hint 6 not yet implemented");
                         break;
                     case 7:
                         if (_LastHint != 7 && _LastHint != 2) Announce(NavVoices.Follow);
@@ -316,15 +316,16 @@ namespace GTA5Navigator
                         /*if (FindHeading() < -.8)
                             AnnounceInversion(disToNextTurn);
                         else*/
-                        AnnounceExitLeft(hint, disToNextTurn);
+                        DriveTo(hint, distance, NavVoices.ExitL);
                         break;
                     case 9:
-                        AnnounceExitRight(hint, disToNextTurn);
+                        DriveTo(hint, distance, NavVoices.ExitR);
                         break;
                 }
 
                 if (distance <= _tPoint[_tPoint.Length-4])
                 {
+                    // Begin driving to destination
                     DriveToDest(distance);
                 }
 
@@ -334,7 +335,6 @@ namespace GTA5Navigator
             catch (Exception problem)
             {
                 throw new Exception("Process(): " + problem.Message + " when hint=" + hint + ", distance=" + disToNextTurn);
-
             }
         }
 
@@ -360,12 +360,14 @@ namespace GTA5Navigator
             return Convert.ToSingle(Math.Cos(Math.Abs(HCAR - HDST))); // 1 = right, 0 normal, -1 opposite
         }
 
-        private void DriveToDest(float distance)
+        private void DriveToDest(float dist)
         {
-            DriveTo(0, distance, NavVoices.Dest, true);
+            // Start a DriveTo in non-preemptive mod, text mode
+            DriveTo(hint: 0, distance: dist, directive: NavVoices.Dest, preemptive: false,  asText: true);
             
-            if (!DestinationReached && InRange(distance, 0, dPoint))
+            if (!DestinationReached && InRange(dist, 0, dPoint))
             {
+                // Arrived at destination
                 AnnounceDestAtSide();
                 SetProgress(0, 4);
                 DestinationReached = true;
@@ -413,19 +415,9 @@ namespace GTA5Navigator
             _Progress[op] = state;
         }
 
-        private void DriveTo(int hint, float distance, NavVoice directive, bool asText = false)
+        private void DriveTo(int hint, float distance, NavVoice directive, bool preemptive = true, bool asText = false)
         {
-            BeginDriving(hint);
-
-            /*if (Progress(hint) <= 0 && distance > tPoint[i])
-            {
-                AnnounceText(distance, NavText.Hint[(int)directive.Hint], NavText.Dir[(int)directive.Dir]);
-            }*/
-            /*if (distance > LastTurnDistance)
-            {
-                // We are going back
-               
-            {*/
+            if (preemptive) BeginDriving(hint);     // Reset any other hint in progress but 'hint'            
 
             for (int i = 1; i < _tPoint.Length; i++)
             {
@@ -451,36 +443,11 @@ namespace GTA5Navigator
                     break;
                 }
             }
-            //}
 
             LastTurnDistance = distance;
         }
 
-        private void AnnounceTurnL(int hint, float distance)
-        {
-            DriveTo(hint, distance, NavVoices.TurnL);
-        }
-
-        private void AnnounceTurnR(int hint, float distance)
-        {
-            DriveTo(hint, distance, NavVoices.TurnR);
-        }
-
-        private void AnnounceExitRight(int hint, float distance)
-        {
-            DriveTo(hint, distance, NavVoices.ExitR);
-        }
-
-        private void AnnounceExitLeft(int hint, float distance)
-        {
-            DriveTo(hint, distance, NavVoices.ExitL);
-        }
-
-        private void AnnounceInversion(int hint, float distance)
-        {
-            DriveTo(hint, distance, NavVoices.Inversion);
-        }
-
+        
         public static Tuple<string, float, float> GenerateDirectionsToCoord(Vector3 dest)
         {
             OutputArgument outputArgument = new OutputArgument();
@@ -500,19 +467,18 @@ namespace GTA5Navigator
             return new Tuple<string, float, float>(text.Substring(0, 1), outputArgument2.GetResult<float>(), outputArgument3.GetResult<float>());
         }
 
-        private static float CalculateTravelDistance(Vehicle v, Vector3 pos)
+        private static float CalculateTravelDistance(Vector3 pos1, Vector3 pos2)
         {
+            InputArgument[] args = new InputArgument[] { pos1.GetHashCode(), pos2.GetHashCode() };
+            OutputArgument out1 = new OutputArgument();
 
-            Entity[] destEntity = World.GetNearbyEntities(pos, 100);
-            if (destEntity != null)
-            {
-                InputArgument[] args = new InputArgument[] { v, destEntity[0] };
-                OutputArgument out1 = new OutputArgument();
-
-                GTA.Native.Function.Call(GTA.Native.Hash.CALCULATE_TRAVEL_DISTANCE_BETWEEN_POINTS, args);
-                return Convert.ToSingle(out1.GetResult<float>());
-            }
-            else return -1;
+            //
+            // v_3 = PATHFIND::CALCULATE_TRAVEL_DISTANCE_BETWEEN_POINTS(
+            //  ENTITY::GET_ENTITY_COORDS(PLAYER::PLAYER_PED_ID(), 1), g_186AE);
+            // https://github.com/brendan-rius/gta-v-decompiled-scripts/blob/master/taxiservice.c4
+            //
+            GTA.Native.Function.Call(GTA.Native.Hash.CALCULATE_TRAVEL_DISTANCE_BETWEEN_POINTS, args);
+            return Convert.ToSingle(out1.GetResult<float>());           
         }
 
         private int getTraffic(Vector3 pos)
