@@ -22,10 +22,12 @@ namespace GTA5Navigator
         public float VolumeFactor { get; set; } = 1;
         public string BasePath { get; set; } = "";
         public string Extension { get; set; } = "wav";
+        System.Media.SoundPlayer Player;
 
         public AudioManager()
         {
             Store = new Dictionary<string, Audio.Wav>();
+            Player = new System.Media.SoundPlayer();
         }
 
         public void Preload(ISound[] sounds)
@@ -33,7 +35,7 @@ namespace GTA5Navigator
             Store.Clear();
             foreach (var sound in sounds)
             {
-                var wav = Audio.Wav.Parse(BasePath + @"\" + sound.Key + "." + Extension, VolumeFactor);
+                var wav = Audio.Wav.LoadAsMemoryStream(BasePath + @"\" + sound.Key + "." + Extension, VolumeFactor);
                 Store.Add(sound.Key, wav);
             }
         }
@@ -48,7 +50,10 @@ namespace GTA5Navigator
             try
             {
                 var wav = Store[key];
-                return wav.Play();
+                Player.Stream = wav.MemoryStream;
+                Player.Stream.Position = 0;
+                Player.Play();
+                return wav.Duration;
             }
             catch
             {

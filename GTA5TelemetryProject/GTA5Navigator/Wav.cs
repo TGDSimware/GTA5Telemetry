@@ -33,12 +33,14 @@ namespace Audio
         private WavHeader Header;
         private List<short> RData;
         private List<short> LData;
+        public MemoryStream MemoryStream { get; private set; }
+        private float _Duration;
 
         public static float Play(string fileName, float volumeFactor = 1)
         {
             using (System.Media.SoundPlayer snd = new System.Media.SoundPlayer())
             {
-                Wav wav = Wav.Parse(fileName, volumeFactor);
+                Wav wav = Wav.Load(fileName, volumeFactor);
 
                 using (var ms = new MemoryStream())
                 {
@@ -82,15 +84,25 @@ namespace Audio
             Header = h;
             RData = rd;
             LData = ld;
+
+            float bytes = (float)(LData.Count + RData.Count) * 2f;
+            _Duration = bytes / (float)Header.bytePerSec;
         }
 
         public float Duration
         {
             get
             {
-                try { 
-                    float bytes = (float)(LData.Count + RData.Count) * 2f;
-                    return bytes / (float)Header.bytePerSec;
+                try {
+                    if (MemoryStream == null)
+                    {
+                        float bytes = (float)(LData.Count + RData.Count) * 2f;
+                        return bytes / (float)Header.bytePerSec;
+                    }
+                    else
+                    {
+                        return _Duration;
+                    }
                 }
                 catch
                 {
@@ -99,13 +111,37 @@ namespace Audio
             }
         }
 
-        public static Wav Parse(string fileName, float volumeFactor = 1)
+        public static Wav Load(string fileName, float volumeFactor = 1)
         {
             using (FileStream fs = new FileStream(fileName, FileMode.Open, FileAccess.Read))
             {
                 try
                 {
                     return Parse(fs, volumeFactor);
+                }
+                finally
+                {
+                    if (fs != null) fs.Close();
+                }
+            }
+        }
+
+        public static Wav LoadAsMemoryStream(string fileName, float volumeFactor = 1)
+        {
+            using (FileStream fs = new FileStream(fileName, FileMode.Open, FileAccess.Read))
+            {
+                Wav wav = null;
+
+                try
+                {
+                    wav = Parse(fs, volumeFactor);
+                    wav.MemoryStream = new MemoryStream();
+                    wav.Write(wav.MemoryStream);
+                    wav.MemoryStream.Position = 0;
+                    wav.LData.Clear();
+                    wav.RData.Clear();
+                    //wav.Header = null;
+                    return wav;
                 }
                 finally
                 {
