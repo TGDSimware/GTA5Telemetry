@@ -308,10 +308,10 @@ namespace GTA5Navigator
                         if (_LastHint != 7 && _LastHint != 2) Announce(NavVoices.Follow);
                         break;
                     case 8:
-                        /*if (FindHeading() < -.8)
-                            AnnounceInversion(disToNextTurn);
-                        else*/
-                        DriveTo(hint, disToNextTurn, NavVoices.ExitL);
+                        if (FindHeading() < 0 && disToNextTurn <= 150)
+                            DriveTo(hint, disToNextTurn, NavVoices.TurnL);
+                        else
+                            DriveTo(hint, disToNextTurn, NavVoices.ExitL);
                         break;
                     case 9:
                         DriveTo(hint, disToNextTurn, NavVoices.ExitR);
@@ -429,7 +429,7 @@ namespace GTA5Navigator
             if (nextPoint == -1) nextPoint = d;
             if (nextPoint == -10) return;       // avoid looping
 
-            //TODO: the range aroundnextpoint should be relative to the current speed               
+            //TODO: the range around nextpoint should be relative to the current speed               
             if (Math.Abs(d - nextPoint) <= 5)
             {
                 int dTo50 = d - d % 50;
@@ -444,11 +444,20 @@ namespace GTA5Navigator
                 {
                     if (voiceIndex > 0)
                     {
+                        // "Intermediate" directive
                         Announce(new NavVoice[] { NavVoices.Distances[voiceIndex], directive });
                     }
                     else
                     {
-                        Announce(directive);
+                        // "Final" directive
+                        // Sequences of final directive must be introduced by a "then"
+                        // At this point if we had a lookhaead directive
+                        // we could Announce() something like:
+                        // { directive, NavVoices.AndThen, lookaheadDirective }
+                        if (hint == _LastHint)
+                            Announce(directive);
+                        else
+                            Announce(new NavVoice[] { NavVoices.Then, directive });
                     }
                 }
 
@@ -458,7 +467,7 @@ namespace GTA5Navigator
                 // Or 450 -> 300 -> 200 - 100
                 // I think that's better than going from 100 to 100
                 // like 450 -> 350 -> 250 -> 150 -> 50
-                if (_DEBUG) UI.Notify("Next point will be " + getNextPoint(d));
+                if (_DEBUG) UI.Notify("Next announce at " + getNextPoint(d));
                 SetNext(hint, getNextPoint(d));
             }
         }

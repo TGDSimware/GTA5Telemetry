@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace GTA5Navigator
 {
-    public enum Hint { TURN = 0, KEEP, FOLLOW, INVERSION, EXIT, WRONG, RECOMP, DEST, DISTANCE}
+    public enum Hint { TURN = 0, KEEP, FOLLOW, INVERSION, EXIT, WRONG, RECOMP, DEST, DISTANCE, THEN}
     public enum Dir { NONE = 0, RIGHT, LEFT };
 
     public class NavVoice : ISound
@@ -49,7 +49,8 @@ namespace GTA5Navigator
         public static NavVoice Keep = new NavVoice("keep", Hint.KEEP, Dir.NONE, 0);
         public static NavVoice Follow = new NavVoice("follow", Hint.FOLLOW, Dir.NONE, 0);
         public static NavVoice Calculating = new NavVoice("calculating", Hint.RECOMP, Dir.NONE, 0);
-        
+
+        public static NavVoice Then = new NavVoice("then", Hint.THEN, Dir.NONE, 0);
         public static NavVoice WrongDirection = new NavVoice("wrong-direction", Hint.WRONG, Dir.NONE, 0);
 
         public static NavVoice[] Voices =
