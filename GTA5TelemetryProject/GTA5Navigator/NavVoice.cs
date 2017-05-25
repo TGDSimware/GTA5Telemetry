@@ -56,6 +56,6 @@ namespace GTA5Navigator
             { In400m, In300m, In250m, In200m, In150m, In100m, DestRight, DestLeft, Dest, Inversion,
               TurnL, TurnR, ExitR, ExitL, Keep, Calculating, WrongDirection, Follow };
 
-        public static NavVoice[] Distances = { In450m, In400m, In350m, In300m, In250m, In200m, In150m, In100m, null, null };
+        public static NavVoice[] Distances = { null, In100m, In150m, In200m, In250m, In300m, In350m, In400m, In450m };
     }
 }

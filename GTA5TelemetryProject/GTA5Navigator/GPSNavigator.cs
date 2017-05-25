@@ -28,11 +28,10 @@ namespace GTA5Navigator
         Vector3 _CurrentPos;
         Vector3 _LastPos;
         float _dPoint = 20;
-        private float[] _Next = new float[10];
+        private Int32[] _Next = new Int32[10];
 
         Vehicle CurrentVehicle = null;
 
-        private int[] _tPoint; //Turning points
         private bool _DEBUG = false;
         private bool _TextNotes = false;
         private float _VolumeFactor = 1;
@@ -76,11 +75,6 @@ namespace GTA5Navigator
 
                 NavText.Unit = scriptSettings.GetValue<string>("LANGUAGE", "UNIT", "Km");
                 NavText.MessageOn = scriptSettings.GetValue<string>("LANGUAGE", "MESSAGEON", "Navigator active. Extimated distance");
-
-                string points = scriptSettings.GetValue<string>("ENGINE", "TURNPOINTS", "400,350,300,250,200,150,100,50,5");
-                string[] sPoints = points.Split(',');
-                _tPoint = new Int32[sPoints.Length];
-                for (int i = 0; i < sPoints.Length; i++) _tPoint[i] = Convert.ToInt32(sPoints[i]);
 
                 int updateInterval = scriptSettings.GetValue<int>("ENGINE", "UPDATEINTERVAL", 100);
                 this.Interval = updateInterval;
@@ -292,7 +286,7 @@ namespace GTA5Navigator
                         else
                         {
                             SetNext(1, 0);
-                            DriveTo(hint, distance, NavVoices.Inversion);
+                            DriveTo(hint, disToNextTurn, NavVoices.Inversion);
                         }
                         break;
                     case 2:
@@ -302,10 +296,10 @@ namespace GTA5Navigator
                         UI.Notify("Hint 3 not yet implemented");
                         break;
                     case 4:
-                        DriveTo(hint, distance, NavVoices.TurnL);
+                        DriveTo(hint, disToNextTurn, NavVoices.TurnL);
                         break;
                     case 5:
-                        DriveTo(hint, distance, NavVoices.TurnR);
+                        DriveTo(hint, disToNextTurn, NavVoices.TurnR);
                         break;
                     case 6:
                         UI.Notify("Hint 6 not yet implemented");
@@ -317,14 +311,14 @@ namespace GTA5Navigator
                         /*if (FindHeading() < -.8)
                             AnnounceInversion(disToNextTurn);
                         else*/
-                        DriveTo(hint, distance, NavVoices.ExitL);
+                        DriveTo(hint, disToNextTurn, NavVoices.ExitL);
                         break;
                     case 9:
-                        DriveTo(hint, distance, NavVoices.ExitR);
+                        DriveTo(hint, disToNextTurn, NavVoices.ExitR);
                         break;
                 }
 
-                if (distance <= _tPoint[_tPoint.Length - 4])
+                if (distance <= 220)
                 {
                     // Begin driving to destination
                     DriveToDest(distance);
@@ -370,7 +364,7 @@ namespace GTA5Navigator
             {
                 // Arrived at destination
                 AnnounceDestAtSide();
-                SetNext(0, -1);
+                SetNext(0, -10);
                 DestinationReached = true;
                 ResetHint(0);
             }
@@ -397,59 +391,75 @@ namespace GTA5Navigator
         {
             for (int i = 0; i < _Next.Length; i++)
             {
-                if (i != op) _Next[i] = 9999;
+                if (i != op) _Next[i] = -1;
             }
         }
 
         private void ResetHint(int op)
         {
-            _Next[op] = 9999;
+            _Next[op] = -1;
         }
 
-        private float Next(int op)
+        private int Next(int op)
         {
             return _Next[op];
         }
 
-        private void SetNext(int op, float dist)
+        private void SetNext(int op, int dist)
         {
-           _Next[op] = dist;
+            _Next[op] = dist;
+        }
+
+        private int getNextPoint(int distance)
+        {
+            if (distance >= 450) return (distance - distance % 100) - 200;
+            if (distance >= 150) return distance - distance % 50 - 100;
+            if (distance <= 20) return -10;
+            if (distance <= 100) return 20;
+            return 0;
         }
 
         private void DriveTo(int hint, float distance, NavVoice directive, bool exclusive = true, bool asText = false)
         {
             if (exclusive) StartHint(hint);     // Reset any other hint in progress but 'hint'            
 
-            for (int i = 0; i < _tPoint.Length; i++)
-            {
-                //TODO: the range around _tPoint[i] should be relative to the current speed               
-                if (distance <= Next(hint) && InRange(distance, _tPoint[i] - 20, _tPoint[i] + 20))
-                {
-                    // Set the next announce point, which will be the next multiple of 100
-                    // after at least other 100
-                    // E.g. 350 -> 200 -> 100
-                    // Or 450 -> 300 -> 200 - 100
-                    // I think that's better than going from 100 to 100
-                    // like 450 -> 350 -> 250 -> 150 -> 50
-                    SetNext(hint, Math.Min(_tPoint[i] - 100 - _tPoint[i] % 100, 20));
+            int d = Convert.ToInt32(distance);
 
-                    if (asText)
+            Int32 nextPoint = Next(hint);
+            if (nextPoint == -1) nextPoint = d;
+            if (nextPoint == -10) return;       // avoid looping
+            
+            //TODO: the range aroundnextpoint should be relative to the current speed               
+            if (Math.Abs(d - nextPoint) <= 5)
+            {
+                int dTo50 = d - d % 50;
+                int voiceIndex = dTo50 / 50;
+                if (voiceIndex >= NavVoices.Distances.Length) asText = true;    // No voice available for that distance
+
+                if (asText)
+                {
+                    AnnounceText(d, NavText.Hint[(int)directive.Hint], NavText.Dir[(int)directive.Dir]);
+                }
+                else
+                {
+                    if (voiceIndex > 0)
                     {
-                        AnnounceText(distance, NavText.Hint[(int)directive.Hint], NavText.Dir[(int)directive.Dir]);
+                        Announce(new NavVoice[] { NavVoices.Distances[voiceIndex], directive });
                     }
                     else
                     {
-                        if (i < _tPoint.Length - 1)
-                        {
-                            Announce(new NavVoice[] { NavVoices.Distances[i - 1], directive });
-                        }
-                        else
-                        {
-                            Announce(directive);
-                        }
+                        Announce(directive);
                     }
-                    break;
                 }
+
+                // Set the next announce point, which will be the next multiple of 100
+                // after at least other 100
+                // E.g. 350 -> 200 -> 100
+                // Or 450 -> 300 -> 200 - 100
+                // I think that's better than going from 100 to 100
+                // like 450 -> 350 -> 250 -> 150 -> 50
+                UI.Notify("Next point will be " + getNextPoint(d));
+                SetNext(hint, getNextPoint(d));
             }
         }
 
