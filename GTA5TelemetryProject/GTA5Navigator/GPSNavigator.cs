@@ -412,28 +412,28 @@ namespace GTA5Navigator
 
         private int getNextPoint(int distance)
         {
-            if (distance >= 450) return (distance - distance % 100) - 200;
-            if (distance >= 150) return distance - distance % 50 - 100;
+            if (distance > 450) return (distance - distance % 100) - 200;
+            if (distance > 150) return distance - distance % 50 - 100;
             if (distance <= 20) return -10;
-            if (distance <= 100) return 20;
-            return 0;
+            if (distance <= 150) return 20;
+            return -1;
         }
 
         private void DriveTo(int hint, float distance, NavVoice directive, bool exclusive = true, bool asText = false)
         {
-            if (exclusive) StartHint(hint);     // Reset any other hint in progress but 'hint'            
+            if (hint != _LastHint && exclusive) StartHint(hint);     // Reset any other hint in progress but 'hint'            
 
             int d = Convert.ToInt32(distance);
 
             Int32 nextPoint = Next(hint);
             if (nextPoint == -1) nextPoint = d;
             if (nextPoint == -10) return;       // avoid looping
-            
+
             //TODO: the range aroundnextpoint should be relative to the current speed               
             if (Math.Abs(d - nextPoint) <= 5)
             {
                 int dTo50 = d - d % 50;
-                int voiceIndex = dTo50 / 50;
+                int voiceIndex = dTo50 < 50 ? 0 : dTo50 / 50 - 1;
                 if (voiceIndex >= NavVoices.Distances.Length) asText = true;    // No voice available for that distance
 
                 if (asText)
@@ -458,7 +458,7 @@ namespace GTA5Navigator
                 // Or 450 -> 300 -> 200 - 100
                 // I think that's better than going from 100 to 100
                 // like 450 -> 350 -> 250 -> 150 -> 50
-                UI.Notify("Next point will be " + getNextPoint(d));
+                if (_DEBUG) UI.Notify("Next point will be " + getNextPoint(d));
                 SetNext(hint, getNextPoint(d));
             }
         }
