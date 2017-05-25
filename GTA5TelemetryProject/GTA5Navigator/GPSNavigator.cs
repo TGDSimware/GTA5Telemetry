@@ -67,7 +67,7 @@ namespace GTA5Navigator
 
                 // Load settings                               
                 string hints = scriptSettings.GetValue<string>("LANGUAGE", "HINTS",
-                    "Turno,Go straight,Follow,Inversion,Exit,Wrong Direction,Arrived at destination");
+                    "Turn,Go straight,Follow,Inversion,Exit,Wrong Direction,Arrived at destination");
                 NavText.Hint = hints.Split(',');
 
                 string directions = scriptSettings.GetValue<string>("LANGUAGE", "DIRECTIONS", "-,Right,Left");
