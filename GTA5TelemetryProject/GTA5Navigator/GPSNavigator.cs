@@ -277,7 +277,7 @@ namespace GTA5Navigator
                         {
                             // No distance is known, use Next as a counter
                             SetNext(1, Next(1) + 1);
-                            if (Next(1) >= 10)
+                            if (Next(1) >= 20)
                             {
                                 Announce(NavVoices.WrongDirection);
                                 SetNext(1, 0);
@@ -305,13 +305,13 @@ namespace GTA5Navigator
                         UI.Notify("Hint 6 not yet implemented");
                         break;
                     case 7:
-                        if (_LastHint != 7 && _LastHint != 2) Announce(NavVoices.Follow);
+                        DriveTo(hint, disToNextTurn, NavVoices.KeepR);
                         break;
                     case 8:
                         if (FindHeading() < 0 && disToNextTurn <= 150)
-                            DriveTo(hint, disToNextTurn, NavVoices.TurnL);
-                        else
                             DriveTo(hint, disToNextTurn, NavVoices.ExitL);
+                        else
+                            DriveTo(hint, disToNextTurn, NavVoices.KeepL);
                         break;
                     case 9:
                         DriveTo(hint, disToNextTurn, NavVoices.ExitR);
@@ -364,7 +364,7 @@ namespace GTA5Navigator
             {
                 // Arrived at destination
                 AnnounceDestAtSide();
-                SetNext(0, -10);
+                SetNext(0, -100);
                 DestinationReached = true;
                 ResetHint(0);
             }
@@ -414,7 +414,7 @@ namespace GTA5Navigator
         {
             if (distance > 450) return (distance - distance % 100) - 200;
             if (distance > 150) return distance - distance % 50 - 100;
-            if (distance <= 20) return -10;
+            if (distance <= 100) return -100;
             if (distance <= 150) return 20;
             return -1;
         }
@@ -427,7 +427,7 @@ namespace GTA5Navigator
 
             Int32 nextPoint = Next(hint);
             if (nextPoint == -1) nextPoint = d;
-            if (nextPoint == -10) return;       // avoid looping
+            if (nextPoint == -100) return;       // avoid looping
 
             //TODO: the range around nextpoint should be relative to the current speed               
             if (Math.Abs(d - nextPoint) <= 5)
@@ -442,7 +442,7 @@ namespace GTA5Navigator
                 }
                 else
                 {
-                    if (voiceIndex > 0)
+                    if (voiceIndex > 0 && voiceIndex < NavVoices.Distances.Length)
                     {
                         // "Intermediate" directive
                         Announce(new NavVoice[] { NavVoices.Distances[voiceIndex], directive });
@@ -455,9 +455,17 @@ namespace GTA5Navigator
                         // we could Announce() something like:
                         // { directive, NavVoices.AndThen, lookaheadDirective }
                         if (hint == _LastHint)
+                        {
                             Announce(directive);
-                        else
+                        }
+                        else if (_LastHint >= 4)
+                        {
                             Announce(new NavVoice[] { NavVoices.Then, directive });
+                        }
+                        else
+                        {
+                            Announce(directive);
+                        }
                     }
                 }
 
