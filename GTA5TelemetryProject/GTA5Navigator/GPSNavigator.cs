@@ -23,11 +23,12 @@ namespace GTA5Navigator
     class GPSNavigator : Script
     {
         float _LastHint = -1;
-        float _LastHintDistance = -1;
+        float _DistanceAtLastHint = -1;
 
         Vector3 _CurrentPos;
         Vector3 _LastPos;
-        float _dPoint = 20;
+        float _DPoint = 20;
+        float _Delta;
         private Int32[] _Next = new Int32[10];
 
         Vehicle CurrentVehicle = null;
@@ -79,7 +80,7 @@ namespace GTA5Navigator
                 int updateInterval = scriptSettings.GetValue<int>("ENGINE", "UPDATEINTERVAL", 100);
                 this.Interval = updateInterval;
 
-                _dPoint = scriptSettings.GetValue<int>("ENGINE", "DPOINT", 20);
+                _DPoint = scriptSettings.GetValue<int>("ENGINE", "DPOINT", 20);
 
                 _VolumeFactor = scriptSettings.GetValue<int>("ENGINE", "VOLUMEFACTOR", 100) / 100f;
 
@@ -226,6 +227,10 @@ namespace GTA5Navigator
             {
                 UI.Notify("Announce(): " + problem.Message);
             }
+            finally
+            {
+                _DistanceAtLastHint = DistanceRemaining;
+            }
         }
 
         public void AtPosition(Vector3 pos)
@@ -255,13 +260,12 @@ namespace GTA5Navigator
 
         public void Process(float fHint, float disToNextTurn, float disToWaypoint)
         {
-            float distance = DistanceRemaining;
-            float delta = Math.Abs(distance - _LastHintDistance);
+            _Delta = Math.Abs(DistanceRemaining - _DistanceAtLastHint);
             int hint = (int)fHint;
 
             if (_DEBUG)
             {
-                UI.ShowSubtitle("Hint " + hint + " @ " + disToNextTurn + "m delta = " + delta + "m");
+                UI.ShowSubtitle("Hint " + hint + " @ " + disToNextTurn + "m delta = " + _Delta + "m");
             }
 
             try
@@ -290,7 +294,7 @@ namespace GTA5Navigator
                         }
                         break;
                     case 2:
-                        if (_LastHint != 2) Announce(NavVoices.Keep);
+                        if (_LastHint != 2 & _LastHint != 7) Announce(NavVoices.Keep);
                         break;
                     case 3:
                         UI.Notify("Hint 3 not yet implemented");
@@ -318,13 +322,13 @@ namespace GTA5Navigator
                         break;
                 }
 
-                if (distance <= 220)
+                if (DistanceRemaining < 500)
                 {
                     // Begin driving to destination
-                    DriveToDest(distance);
+                    DriveToDest(DistanceRemaining);
                 }
 
-                _LastHintDistance = DistanceRemaining;
+               
                 _LastHint = hint;
             }
             catch (Exception problem)
@@ -360,7 +364,7 @@ namespace GTA5Navigator
             // Start a DriveTo in non-exclusive mode, text mode
             DriveTo(hint: 0, distance: dist, directive: NavVoices.Dest, exclusive: false, asText: true);
 
-            if (!DestinationReached && InRange(dist, 0, _dPoint))
+            if (!DestinationReached && InRange(dist, 0, _DPoint))
             {
                 // Arrived at destination
                 AnnounceDestAtSide();
@@ -451,14 +455,11 @@ namespace GTA5Navigator
                     {
                         // "Final" directive
                         // Sequences of final directive must be introduced by a "then"
-                        // At this point if we had a lookhaead directive
+                        // At this point if we had a lookahead directive
                         // we could Announce() something like:
                         // { directive, NavVoices.AndThen, lookaheadDirective }
-                        if (hint == _LastHint)
-                        {
-                            Announce(directive);
-                        }
-                        else if (_LastHint >= 4)
+                        
+                        if (_LastHint >= 4 && _Delta <= 30)
                         {
                             Announce(new NavVoice[] { NavVoices.Then, directive });
                         }
