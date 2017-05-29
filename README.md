@@ -3,8 +3,8 @@
 
 THIS MOD
 ========
-This mod make GTA5 behave as a Codemaster Game, sending telemetry data in the same format as the F1 series.
-This makes it compatible with any dashboard that supports Codemasters game.
+This mod make GTA5 behave as a Codemasters Game (F1 series), sending telemetry data in the same format.
+This makes it compatible with any simracing dashboard that supports F1 Codemasters games.
 It has been tested with Simhub and my Arduino Dashboard.
 
 <b>This software is DONATIONWARE. if you find it useful please support my work by doing a free Paypal donation to carloxbox360@live.it</b>
