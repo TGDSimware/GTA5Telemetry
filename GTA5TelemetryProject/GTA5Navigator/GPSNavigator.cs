@@ -328,7 +328,7 @@ namespace GTA5Navigator
                     DriveToDest(DistanceRemaining);
                 }
 
-               
+
                 _LastHint = hint;
             }
             catch (Exception problem)
@@ -433,6 +433,18 @@ namespace GTA5Navigator
             if (nextPoint == -1) nextPoint = d;
             if (nextPoint == -100) return;       // avoid looping
 
+            /*
+            Vector3 node1 = getNthClosestVehicleNode(this.CurrentVehicle.Position, 1);
+            Vector3 node2 = getNthClosestVehicleNode(this.CurrentVehicle.Position, 2);
+            World.DrawMarker()
+            string currentStreet = World.GetStreetName(this.CurrentVehicle.Position);
+            string nextStreet = World.GetStreetName(node1);
+            string nextStreet2 = World.GetStreetName(node2);            
+
+            UI.Notify("Now at " + currentStreet + "\nNext street: " + nextStreet);
+            UI.Notify("Then " + nextStreet2);
+            */
+
             //TODO: the range around nextpoint should be relative to the current speed               
             if (Math.Abs(d - nextPoint) <= 5)
             {
@@ -458,7 +470,7 @@ namespace GTA5Navigator
                         // At this point if we had a lookahead directive
                         // we could Announce() something like:
                         // { directive, NavVoices.AndThen, lookaheadDirective }
-                        
+
                         if (_LastHint >= 4 && _Delta <= 30)
                         {
                             Announce(new NavVoice[] { NavVoices.Then, directive });
@@ -525,6 +537,49 @@ namespace GTA5Navigator
         {
             GTA.Native.InputArgument[] args = { load };
             GTA.Native.Function.Call(GTA.Native.Hash.LOAD_ALL_PATH_NODES, args);
+        }
+
+
+        private Vector3 getNthClosestVehicleNode(Vector3 position, int nth)
+        {
+            OutputArgument safe1 = new OutputArgument();
+            OutputArgument safe2 = new OutputArgument();
+            OutputArgument safe3 = new OutputArgument();
+
+            OutputArgument outPosArg = new OutputArgument();
+
+            Function.Call(Hash.GET_NTH_CLOSEST_VEHICLE_NODE, position.X, position.Y, position.Z, nth, outPosArg, safe1, safe2, safe3);
+            Vector3 midNode = outPosArg.GetResult<Vector3>();
+            return midNode;
+        }
+
+        private int getNthClosestVehicleNodeId(Vector3 position, int nth)
+        {
+            OutputArgument safe1 = new OutputArgument();
+
+            return Function.Call<int>(Hash.GET_NTH_CLOSEST_VEHICLE_NODE_ID, position.X, position.Y, position.Z, nth, safe1, 0f, 0f);
+        }
+
+        private bool pointOnRoad(Vector3 v)
+
+        {
+            return Function.Call<bool>(Hash.IS_POINT_ON_ROAD, v.X, v.Y, v.Z, 1f);
+        }
+
+        private void isLeftOrRight(Vehicle vehicle, Vector3 midNode)
+        {
+            float laneWidth = 5.6f;
+
+            // assume midNode is in the middle of a lane 
+            Vector3 roadPerp = Vector3.Cross(Vector3.WorldUp, Game.Player.Character.CurrentVehicle.ForwardVector);
+            Vector3 roadPerpNorm = (roadPerp) * (1 / roadPerp.Length());
+
+            Vector3 firstLaneLeft = midNode + 0.5f * laneWidth * roadPerpNorm;
+            Vector3 firstLaneRight = midNode - 0.5f * laneWidth * roadPerpNorm;
+
+            UI.Notify("L " + pointOnRoad(firstLaneLeft).ToString() + " " + World.GetStreetName(firstLaneLeft));
+            UI.Notify("R " + pointOnRoad(firstLaneRight).ToString() + " " + World.GetStreetName(firstLaneRight));
+
         }
     }
 }
